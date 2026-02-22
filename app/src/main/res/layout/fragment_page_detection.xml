@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:id="@+id/fragment_detection"
+    tools:context=".fragment.main.classify.PageDetectionFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+                <!-- Toolbar -->
+                <androidx.appcompat.widget.Toolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    app:layout_collapseMode="pin">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/ivBack"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_back"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@color/custom_color_black" />
+
+                        <ImageView
+                            android:id="@+id/iv_bookmark"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/ic_bookmarked"
+                            app:layout_constraintBottom_toBottomOf="@+id/ivMore"
+                            app:layout_constraintEnd_toStartOf="@+id/ivMore"
+                            app:layout_constraintTop_toTopOf="@+id/ivMore"
+                            app:tint="@color/custom_color_black"/>
+
+                        <TextView
+                            android:id="@+id/txt_prediction"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Prediction"
+                            android:textSize="20sp"
+                            android:textColor="@color/custom_color_text_primary"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="@+id/ivBack"
+                            app:layout_constraintStart_toEndOf="@+id/ivBack"
+                            app:layout_constraintTop_toTopOf="@+id/ivBack" />
+
+                        <ImageView
+                            android:id="@+id/ivMore"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/ic_more_vert"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@color/custom_color_black"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.appcompat.widget.Toolbar>
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <ImageView
+            android:id="@+id/imageVieww"
+            android:layout_width="0dp"
+            android:layout_height="350dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/logo_detection"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+
+        <TextView
+            android:id="@+id/tv_funfact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Click here to see funfact about "
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="@+id/imageVieww"
+            app:layout_constraintStart_toStartOf="@+id/imageVieww"
+            app:layout_constraintTop_toBottomOf="@+id/imageVieww" />
+
+        <Button
+            android:id="@+id/btnDoDetectino"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/custom_color_secondary"
+            android:text="Open Gallery"
+            android:textColor="@color/custom_color_text_primary"
+            app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_funfact" />
+
+
+        <Button
+            android:id="@+id/btn_reset_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/custom_color_secondary"
+            android:text="Reset Image"
+            android:textColor="@color/custom_color_text_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/imageVieww" />
+
+        <TextView
+            android:id="@+id/txt_hasil_prediksi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Hasil Prediksi"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_reset_image" />
+
+        <TextView
+            android:id="@+id/tv_prediction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"
+            app:layout_constraintEnd_toEndOf="@+id/txt_hasil_prediksi"
+            app:layout_constraintStart_toStartOf="@+id/txt_hasil_prediksi"
+            app:layout_constraintTop_toBottomOf="@+id/txt_hasil_prediksi" />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.50121653" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+<!--    Custom Colors-->
+    <color name="custom_color_primary">#C0EBA6</color>
+    <color name="custom_color_secondary">#69915e</color>
+    <color name="custom_color_secondary_light">#FCCD2A</color>
+    <color name="custom_color_background">#FFFFFF</color>
+    <color name="custom_color_text_primary">#241e1a</color>
+    <color name="custom_color_text_secondary">#464747</color>
+    <color name="custom_color_text_login">#707070</color>
+    <color name="g_blue">#000DAE</color>
+    <color name="g_gray700">#666666</color>
+    <color name="g_dark_blue">#000759</color>
+    <color name="g_blue_gray200">#97AABD</color>
+    <color name="g_white">#F5F8FA</color>
+    <color name="lavender">#8692f7</color>
+    <color name="active_indicator">#D3F1DF</color>
+    <color name="bottom_indicator">#47663B</color>
+    <color name="g_card_background">#FAFDFF</color>
+    <color name="red">#FF2020</color>
+    <color name="custom_color_white">#FFFFFF</color>
+    <color name="custom_color_black">#000000</color>
+    <color name="custom_color_profile">#f5f5f5</color>
+
+    <color name="custom_color_card_profile">#f1f1f1</color>
+
+    <color name="custom_color_text_card_profile">#241e1a</color>
+
+    <color name="custom_color_bottom_nav">#F5F8FA</color>
+    <color name="bounding_box_color">#234567</color>
+
+</resources>

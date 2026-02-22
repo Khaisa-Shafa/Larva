@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.home.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_newsDetailFragment"
+            app:destination="@id/newsDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bookmarkedFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.bookmarked.BookmarkedFragment"
+        android:label="fragment_bookmarked"
+        tools:layout="@layout/fragment_bookmarked">
+        <action
+            android:id="@+id/action_bookmarkedFragment_to_detailBookmarkFragment"
+            app:destination="@id/detailBookmarkFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/favoriteFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.favorite.FavoriteFragment"
+        android:label="fragment_favorite"
+        tools:layout="@layout/fragment_favorite" >
+        <action
+            android:id="@+id/action_favoriteFragment_to_newsDetailFragment"
+            app:destination="@id/newsDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.profile.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_settingsFragment2"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_aboutFragment2"
+            app:destination="@id/aboutFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.profile.EditProfileFragment"
+        android:label="fragment_edit_profile"
+        tools:layout="@layout/fragment_edit_profile" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.profile.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.profile.AboutFragment"
+        android:label="fragment_about"
+        tools:layout="@layout/fragment_about" />
+    <fragment
+        android:id="@+id/newsDetailFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.home.NewsDetailFragment"
+        android:label="fragment_news_detail"
+        tools:layout="@layout/fragment_news_detail" >
+        <argument
+            android:name="news"
+            app:argType="com.dicoding.skripsiapp.data.News" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pageDetectionFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.classify.PageDetectionFragment"
+        android:label="fragment_page_detection"
+        tools:layout="@layout/fragment_page_detection" >
+        <action
+            android:id="@+id/action_pageDetectionFragment_to_detectionViewPagerFragment"
+            app:destination="@id/detectionViewPagerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/classificationViewPagerFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.bookmarked.viewpager.ClassificationViewPagerFragment"
+        android:label="fragment_classification_view_pager"
+        tools:layout="@layout/fragment_classification_view_pager">
+        <argument
+            android:name="label"
+            app:argType="string" />
+        <argument
+            android:name="bitmap"
+            app:argType="string" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/detectionViewPagerFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.bookmarked.viewpager.DetectionViewPagerFragment"
+        android:label="fragment_detection_view_pager"
+        tools:layout="@layout/fragment_detection_view_pager">
+
+        <argument
+            android:name="label"
+            app:argType="string" />
+        <argument
+            android:name="bitmap"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailBookmarkFragment"
+        android:name="com.dicoding.skripsiapp.fragment.main.bookmarked.detailbookmark.DetailBookmarkFragment"
+        android:label="fragment_detail_bookmark"
+        tools:layout="@layout/fragment_detail_bookmark">
+
+        <argument
+            android:name="bookmarkId"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
+</navigation>

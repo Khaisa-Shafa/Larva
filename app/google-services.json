@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "248952852036",
+    "project_id": "projectskripsi-fb772",
+    "storage_bucket": "projectskripsi-fb772.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248952852036:android:a33ed8c401ce8b6c083611",
+        "android_client_info": {
+          "package_name": "com.dicoding.skripsiapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJjd1WRhZ6qZPlssH8JZhHAwOHbuKXlyI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

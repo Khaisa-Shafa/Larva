@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">SkripsiApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="tv_getStarted">Get Started</string>
+    <string name="tv_next">Next</string>
+    <string name="tv_skip">Skip</string>
+
+
+    <string name="onboarding_title1">Title 1</string>
+    <string name="onboarding_description1">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</string>
+
+    <string name="onboarding_title2">Title 2</string>
+    <string name="onboarding_description2">Placerat faucibus suscipit class ad pretium rutrum hac. Montes ut elit maecenas nostra pellentesque aenean. Eget netus felis bibendum cursus leo! Quam ultrices amet accumsan pretium, tempor nascetur. Velit lacinia duis egestas massa vulputate gravida montes.</string>
+
+    <string name="onboarding_title3">Title 3</string>
+    <string name="onboarding_description3">Nec mauris fusce hendrerit; per tortor tincidunt. Velit sem nullam potenti orci tempus tempor erat cras. At maecenas porttitor ligula libero eget felis.</string>
+
+    <string name="enable_dark_mode">Enable dark mode</string>
+    <string name="disable_dark_mode">Disable dark mode</string>
+
+    <string name="removed_from_favorites">Removed from favorite</string>
+    <string name="added_to_favorites">Added to favorite</string>
+
+    <string name="search_hint">Masukkan berita yang ingin anda cari</string>
+
+</resources>

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_detail"
+    android:fitsSystemWindows="true"
+    tools:context=".fragment.main.bookmarked.detailbookmark.DetailBookmarkFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- AppBarLayout -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- CollapsingToolbarLayout -->
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+                <!-- Toolbar -->
+                <androidx.appcompat.widget.Toolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="?attr/colorSurface"
+                    app:layout_collapseMode="pin">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/ivBack"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_back"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@color/custom_color_black" />
+
+                        <TextView
+                            android:id="@+id/txt_title"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="Classification"
+                            android:textColor="@color/custom_color_text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="@+id/ivBack"
+                            app:layout_constraintEnd_toStartOf="@+id/iv_location"
+                            app:layout_constraintStart_toEndOf="@+id/ivBack"
+                            app:layout_constraintTop_toTopOf="@+id/ivBack" />
+
+                        <ImageView
+                            android:id="@+id/iv_bookmark"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/ic_bookmarked"
+                            app:layout_constraintBottom_toBottomOf="@+id/ivMore"
+                            app:layout_constraintEnd_toStartOf="@+id/ivMore"
+                            app:layout_constraintTop_toTopOf="@+id/ivMore"
+                            app:tint="@color/custom_color_black"/>
+
+                        <ImageView
+                            android:id="@+id/iv_location"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/ic_location"
+                            app:layout_constraintBottom_toBottomOf="@+id/iv_bookmark"
+                            app:layout_constraintEnd_toStartOf="@+id/iv_bookmark"
+                            app:layout_constraintTop_toTopOf="@+id/iv_bookmark" />
+
+                        <ImageView
+                            android:id="@+id/ivMore"
+                            android:layout_width="33dp"
+                            android:layout_height="33dp"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/ic_more_vert"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@color/custom_color_black"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.appcompat.widget.Toolbar>
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="0dp"
+            android:layout_height="350dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="32dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/screenshot_capture_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+
+        <Button
+            android:id="@+id/btn_load_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:text="LOAD IMAGE"
+            android:textSize="16sp"
+            android:textColor="@color/custom_color_text_primary"
+            android:backgroundTint="@color/custom_color_secondary"
+            app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_fun_fact" />
+
+        <Button
+            android:id="@+id/btn_capture_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:text="TAKE IMAGE"
+            android:textColor="@color/custom_color_text_primary"
+            android:backgroundTint="@color/custom_color_secondary"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/tv_fun_fact" />
+
+        <Button
+            android:id="@+id/btn_reset_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/custom_color_secondary"
+            android:clickable="true"
+            android:text="Reset Image"
+            android:textColor="@color/custom_color_text_primary"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_load_image" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Output: "
+            android:textColor="@color/custom_color_black"
+            android:textSize="21sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_reset_image" />
+
+        <TextView
+            android:id="@+id/tv_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Result Here"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="21sp"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="@+id/textView"
+            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+        <TextView
+            android:id="@+id/tv_fun_fact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Click here to see funfact about "
+            android:visibility="gone"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/custom_color_black"
+            app:layout_constraintEnd_toEndOf="@+id/imageView"
+            app:layout_constraintStart_toStartOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/guideline2"
+            app:layout_constraintGuide_percent="0.5"
+            android:orientation="vertical"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

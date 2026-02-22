@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menuModelResult"
+        android:title="Model Result" />
+    <item
+        android:id="@+id/menuClassificationReport"
+        android:title="Classification Report" />
+    <item
+        android:id="@+id/menuConfusionMatrix"
+        android:title="Confusion Matrix" />
+
+</menu>
