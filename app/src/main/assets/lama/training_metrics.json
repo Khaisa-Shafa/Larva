@@ -1,0 +1,15 @@
+[
+    {
+        "epoch": 105,
+        "train/box_loss": 0.82275,
+        "train/cls_loss": 0.52312,
+        "train/dfl_loss": 1.18242,
+        "val/box_loss": 0.82498,
+        "val/cls_loss": 0.36225,
+        "val/dfl_loss": 1.319,
+        "metrics/precision(B)": 0.95964,
+        "metrics/recall(B)": 0.97882,
+        "metrics/mAP50(B)": 0.98537,
+        "metrics/mAP50-95(B)": 0.79483
+    }
+]

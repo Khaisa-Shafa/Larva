@@ -1,0 +1,1 @@
+{"confusion_matrix": [[57, 1, 0], [0, 43, 1], [2, 0, 120]], "classes": ["Aedes", "Culex", "Unknown"]}
