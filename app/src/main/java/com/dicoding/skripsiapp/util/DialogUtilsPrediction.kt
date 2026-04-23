@@ -112,27 +112,6 @@ object DialogUtilsPrediction {
             .show()
     }
 
-    fun showFunFactDialog(
-        context: Context,
-        funFact: String,
-        onDismiss: (() -> Unit)? = null
-    ) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Fun Fact")
-        builder.setMessage(funFact)
-
-        builder.setPositiveButton("OK") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        builder.setOnDismissListener {
-            onDismiss?.invoke()
-        }
-
-        builder.create().show()
-    }
-
-
     private fun createTableCell(context: Context, text: String): TextView {
         return TextView(context).apply {
             this.text = text

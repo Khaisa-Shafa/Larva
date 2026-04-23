@@ -97,7 +97,7 @@ class CulexCategoryViewModel @Inject constructor(
                 firestore
                     .collection("News")
                     .whereEqualTo("category", "Culex")
-                    .orderBy("id")
+//                    .orderBy("id")
                     .limit(culexPagingInfo.culexNewsPage * 10)
                     .get()
                     .addOnSuccessListener { result ->

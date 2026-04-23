@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "248952852036",
-    "project_id": "projectskripsi-fb772",
-    "storage_bucket": "projectskripsi-fb772.firebasestorage.app"
+    "project_number": "40470038330",
+    "project_id": "skripsi-mosquito-detection",
+    "storage_bucket": "skripsi-mosquito-detection.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:248952852036:android:a33ed8c401ce8b6c083611",
+        "mobilesdk_app_id": "1:40470038330:android:47e77f8944c3efa9e83203",
         "android_client_info": {
           "package_name": "com.dicoding.skripsiapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "40470038330-qrra2s9r9tt3hp4rnu0d9mra15hq6jq2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dicoding.skripsiapp",
+            "certificate_hash": "8c9b60fb347630a6c8a3586e52e33e870003c41d"
+          }
+        },
+        {
+          "client_id": "40470038330-6vccahcopl7cet0g0ekf2t698fs7cvqh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDJjd1WRhZ6qZPlssH8JZhHAwOHbuKXlyI"
+          "current_key": "AIzaSyB8MemMlCqWQYNlGeUZ976u8HyUKyeZGKk"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "40470038330-6vccahcopl7cet0g0ekf2t698fs7cvqh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

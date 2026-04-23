@@ -2,6 +2,7 @@ package com.dicoding.skripsiapp.activity
 
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -26,8 +27,14 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.dicoding.skripsiapp.R
 import com.dicoding.skripsiapp.databinding.ActivityMainBinding
+import com.dicoding.skripsiapp.ml.YoloSegHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import android.util.Log
+import com.dicoding.skripsiapp.util.Constants
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -40,13 +47,26 @@ class MainActivity : AppCompatActivity() {
     private var lastClickTime: Long = 0
     private val clickDebounceTime = 500L // Waktu debounce dalam milidetik
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
 
+        FirebaseApp.initializeApp(this)
+            
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        val helper = YoloSegHelper(this)
+
+        val inputStream = assets.open("baru/test.jpg")
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+
+        val result = helper.detect(bitmap)
+        
+
+        Log.d("YOLO", "Output size: ${result.size}")
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainHostFragment)) { view, insets ->
             val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -78,9 +98,11 @@ class MainActivity : AppCompatActivity() {
                     R.id.profileFragment -> {
                         navController.popBackStack(R.id.homeFragment, false)
                     }
+
                     R.id.homeFragment -> {
                         finish()
                     }
+
                     else -> {
                         navController.popBackStack()
                     }
@@ -92,72 +114,135 @@ class MainActivity : AppCompatActivity() {
     private fun showButtonDialog() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastClickTime < clickDebounceTime) return
-
         lastClickTime = currentTime
         isDialogShowing = true
 
+        // Langsung tampilkan Choose Model dulu
+        showModelDialog()
+    }
+
+    private fun showModelDialog() {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.bottomsheet_layout_2)
+
+        val linearBottomSheet = dialog.findViewById<LinearLayout>(R.id.linearBottomSheet)
+        val cancelButton = dialog.findViewById<ImageView>(R.id.cancelButton)
+        val layoutModel1 = dialog.findViewById<LinearLayout>(R.id.layoutUploadImageDetection)
+        val layoutModel2 = dialog.findViewById<LinearLayout>(R.id.layoutLiveDetection)
+
+        val gestureDetector =
+            GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: MotionEvent?,
+                    e2: MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    if (e1 != null) {
+                        val deltaY = e2.y - e1.y
+                        val deltaX = e2.x - e1.x
+                        if (deltaY > 100 && Math.abs(deltaX) < 100 && velocityY > 500) {
+                            dialog.dismiss()
+                            return true
+                        }
+                    }
+                    return false
+                }
+            })
+
+        linearBottomSheet?.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
+        }
+
+        cancelButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Pilih Model 1: YOLOv8 + MobileNetV3
+        layoutModel1.setOnClickListener {
+            dialog.dismiss()
+            showActionDialog(Constants.MODEL_YOLOV8_MOBILENETV3)
+        }
+
+        // Pilih Model 2: YOLO11-Seg + MobileViT
+        layoutModel2.setOnClickListener {
+            dialog.dismiss()
+            showActionDialog(Constants.MODEL_YOLO11_MOBILEVIT)
+        }
+
+        dialog.setOnDismissListener { isDialogShowing = false }
+
+        dialog.show()
+        dialog.window?.let { window ->
+            window.setLayout(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            window.attributes.windowAnimations = R.style.DialogAnimation
+            window.setGravity(Gravity.BOTTOM)
+        }
+    }
+
+    private fun showActionDialog(selectedModel: Int) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.bottomsheet_layout)
 
         val linearBottomSheet = dialog.findViewById<LinearLayout>(R.id.linearBottomSheet)
         val cancelButton = dialog.findViewById<ImageView>(R.id.cancelButton)
-        val UploadImageDetectionLayout = dialog.findViewById<LinearLayout>(R.id.layoutUploadImageDetection)
-        val LiveDetectionLayout = dialog.findViewById<LinearLayout>(R.id.layoutLiveDetection)
+        val layoutUploadImage = dialog.findViewById<LinearLayout>(R.id.layoutUploadImageDetection)
+        val layoutLiveDetection = dialog.findViewById<LinearLayout>(R.id.layoutLiveDetection)
 
-        // GestureDetector untuk mendeteksi swipe
-        val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onFling(
-                e1: MotionEvent?,
-                e2: MotionEvent,
-                velocityX: Float,
-                velocityY: Float
-            ): Boolean {
-                if (e1 != null) {
-                    val deltaY = e2.y - e1.y
-                    val deltaX = e2.x - e1.x
-
-                    // Kondisi swipe down
-                    if (deltaY > 100 && Math.abs(deltaX) < 100 && velocityY > 500) {
-                        dialog.dismiss() // Tutup dialog saat swipe ke bawah
-                        return true
+        val gestureDetector =
+            GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: MotionEvent?,
+                    e2: MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float
+                ): Boolean {
+                    if (e1 != null) {
+                        val deltaY = e2.y - e1.y
+                        val deltaX = e2.x - e1.x
+                        if (deltaY > 100 && Math.abs(deltaX) < 100 && velocityY > 500) {
+                            dialog.dismiss()
+                            return true
+                        }
                     }
-
-                    // Kondisi swipe up
-                    if (deltaY < -100 && Math.abs(deltaX) < 100 && velocityY < -500) {
-                        Toast.makeText(this@MainActivity, "Swipe up detected", Toast.LENGTH_SHORT).show()
-                        return true
-                    }
+                    return false
                 }
-                return false
-            }
-        })
+            })
 
-        // Listener untuk swipe gesture pada linearBottomSheet
         linearBottomSheet?.setOnTouchListener { _, event ->
             gestureDetector.onTouchEvent(event)
             true
         }
 
-        // Fungsi untuk tombol cancel
         cancelButton.setOnClickListener {
             dialog.dismiss()
         }
 
-        UploadImageDetectionLayout.setOnClickListener {
+        // Upload Image → bawa selectedModel ke PageDetectionFragment via Bundle
+        layoutUploadImage.setOnClickListener {
             dialog.dismiss()
-            findNavController(R.id.mainHostFragment).navigate(R.id.pageDetectionFragment)
+            val bundle = Bundle().apply {
+                putInt("selected_model", selectedModel)
+            }
+            findNavController(R.id.mainHostFragment).navigate(R.id.pageDetectionFragment, bundle)
         }
 
-        LiveDetectionLayout.setOnClickListener {
+        // Live Detection → bawa selectedModel ke LiveDetectionActivity via Intent
+        layoutLiveDetection.setOnClickListener {
             dialog.dismiss()
             val intent = Intent(this, LiveDetectionActivity::class.java)
+            intent.putExtra("selected_model", selectedModel)
             startActivity(intent)
         }
 
-        dialog.setOnDismissListener {
-            isDialogShowing = false // Reset flag saat dialog ditutup
-        }
+        dialog.setOnDismissListener { isDialogShowing = false }
 
         dialog.show()
         dialog.window?.let { window ->

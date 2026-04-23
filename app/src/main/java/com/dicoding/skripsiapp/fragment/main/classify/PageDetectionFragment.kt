@@ -33,6 +33,11 @@ import com.dicoding.skripsiapp.viewmodel.PageDetectionViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.widget.LinearLayout
+import com.dicoding.skripsiapp.util.Constants
+import android.widget.ImageView
+import com.dicoding.skripsiapp.data.BoundingBox
 
 @AndroidEntryPoint
 class PageDetectionFragment : Fragment() {
@@ -74,8 +79,16 @@ class PageDetectionFragment : Fragment() {
         )
 
         setupWindowInsets()
+
+        val selectedModel = arguments?.getInt("selected_model", -1)
+            .takeIf { it != -1 }
+            ?: Constants.MODEL_YOLOV8_MOBILENETV3
+
+        Log.d("ModelDebug", "Selected model: $selectedModel")
+
         pageDetectionObserver = PageDetectionObserver(
             viewLifecycleOwner,
+            selectedModel,
             pageDetectionViewModel,
             binding,
             ::showLoading,
@@ -126,7 +139,6 @@ class PageDetectionFragment : Fragment() {
                             )
                             true
                         }
-
                         R.id.menuModelResult -> {
                             val trainingMetrics =
                                 pageDetectionViewModel.loadTrainingMetrics(requireContext())
@@ -136,21 +148,10 @@ class PageDetectionFragment : Fragment() {
                             )
                             true
                         }
-
                         else -> false
                     }
                 }
                 popupMenu.show()
-            }
-
-            tvFunfact.setOnClickListener {
-                val topClass = pageDetectionViewModel.getTopPredictionClass()
-                if (topClass != null) {
-                    pageDetectionViewModel.fetchFunFact(topClass) // Fun Fact akan diperbarui melalui observer
-                    showToast("Fetching fun fact for $topClass...")
-                } else {
-                    showToast("No class detected yet.")
-                }
             }
 
             ivBack.setOnClickListener {
@@ -173,7 +174,6 @@ class PageDetectionFragment : Fragment() {
                     pageDetectionViewModel.clearImageData()
                 }
             }
-
         }
     }
 

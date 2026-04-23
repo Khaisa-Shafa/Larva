@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class ClassificationReport(
 
-	@SerializedName("Unknown")
-	val unknown: Unknown,
+	@SerializedName("Anopheles")
+	val anopheles: Anopheles,
 
 	@SerializedName("weighted avg")
 	val weightedAvg: WeightedAvg,
@@ -53,7 +53,7 @@ data class WeightedAvg(
 	val support: Double
 )
 
-data class Unknown(
+data class Anopheles(
 
 	@SerializedName("f1-score")
 	override val f1Score: Double,

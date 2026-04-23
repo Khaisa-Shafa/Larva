@@ -11,6 +11,7 @@ import java.nio.ByteBuffer
 
 class PreviewDataCallback : IPreviewDataCallBack, com.jiangdg.ausbc.callback.IPreviewDataCallBack {
     private var detector: Detector? = null
+    var onBitmapReady: ((Bitmap) -> Unit)? = null
 
     fun setDetector(detector: Detector) {
         this.detector = detector
@@ -19,6 +20,9 @@ class PreviewDataCallback : IPreviewDataCallBack, com.jiangdg.ausbc.callback.IPr
     override fun onPreviewDataReceived(data: ByteArray, width: Int, height: Int, format: Int) {
         // Konversi data preview ke Bitmap
         val bitmap = previewDataToBitmap(data, width, height, format)
+
+        onBitmapReady?.invoke(bitmap)
+        detector?.detect(bitmap)
 
         // Lakukan deteksi objek
         detector?.detect(bitmap)

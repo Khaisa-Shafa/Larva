@@ -16,7 +16,7 @@ class ClassificationReportAdapter(private val report: ClassificationReport) :
         "Class" to listOf("Precision", "Recall", "F1-Score", "Support"),
         "Aedes" to listOf(report.aedes.precision, report.aedes.recall, report.aedes.f1Score, report.aedes.support),
         "Culex" to listOf(report.culex.precision, report.culex.recall, report.culex.f1Score, report.culex.support),
-        "Unknown" to listOf(report.unknown.precision, report.unknown.recall, report.unknown.f1Score, report.unknown.support),
+        "Anopheles" to listOf(report.anopheles.precision, report.anopheles.recall, report.anopheles.f1Score, report.anopheles.support),
         "Macro Avg" to listOf(report.macroAvg.precision, report.macroAvg.recall, report.macroAvg.f1Score, report.macroAvg.support),
         "Weighted Avg" to listOf(report.weightedAvg.precision, report.weightedAvg.recall, report.weightedAvg.f1Score, report.weightedAvg.support),
         "Accuracy" to listOf(report.accuracy, "-", "-", "-")

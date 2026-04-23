@@ -104,6 +104,7 @@ class HomeFragment : Fragment() {
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Unexpected error in sliderNews collection", e)
+                            Log.d("HOME_DEBUG", "DATA: ${resource.data}")
                         }
                     }
                 }
@@ -115,7 +116,7 @@ class HomeFragment : Fragment() {
             AllCategoryFragment(),
             AedesCategoryFragment(),
             CulexCategoryFragment(),
-            AnotherCategoryFragment(),
+            AnotherCategoryFragment()
         )
 
         binding.viewpagerHome.apply {
@@ -126,14 +127,11 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Handle conflicts between NestedScrollView and ViewPager2
-        binding.viewpagerHome.setOnTouchListener { _, event ->
-            if (binding.nestedScrollHome.canScrollVertically(-1) || binding.nestedScrollHome.canScrollVertically(1)) {
-                // Jika NestedScrollView sedang scroll, matikan swipe di ViewPager2
-                false
-            } else {
-                // Jika tidak ada scroll, aktifkan swipe di ViewPager2
-                binding.viewpagerHome.onTouchEvent(event)
+        binding.viewpagerHome.apply {
+            isUserInputEnabled = true
+            (getChildAt(0) as? androidx.recyclerview.widget.RecyclerView)?.apply {
+                isNestedScrollingEnabled = true
+                overScrollMode = View.OVER_SCROLL_NEVER
             }
         }
 
@@ -145,10 +143,11 @@ class HomeFragment : Fragment() {
             when (position) {
                 0 -> tab.text = "All"
                 1 -> tab.text = "Aedes"
-                2 -> tab.text = "Culex"
-                3 -> tab.text = "Another"
+                2 -> tab.text = "Anopheles"
+                3 -> tab.text = "Culex"
             }
         }.attach()
+
     }
 
     private fun setUpSliderNewsRv() {
@@ -177,4 +176,5 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

@@ -86,61 +86,6 @@ object DialogUtilsClassification {
             .show()
     }
 
-    fun showFunFactDialog(
-        context: Context,
-        lifecycleOwner: LifecycleOwner,
-        className: String,
-        viewModel: PageClassificationViewModel
-    ) {
-        // Tampilkan progress dialog selama data dimuat
-        val progressDialog = AlertDialog.Builder(context)
-            .setTitle("Fetching Fun Fact")
-            .setMessage("Please wait...")
-            .setCancelable(false)
-            .create()
-        progressDialog.show()
-
-        // Menghapus observer sebelumnya sebelum menambahkan yang baru
-        viewModel.funFact.removeObservers(lifecycleOwner)
-
-        // Memanggil method ViewModel untuk mengambil fun fact
-        viewModel.fetchFunFact(className)
-
-        // Mengamati perubahan pada LiveData funFact
-        viewModel.funFact.observe(lifecycleOwner, Observer { resource ->
-            when (resource) {
-                is Resource.Loading -> {
-                    // Progress dialog sudah ditampilkan sebelumnya
-                }
-                is Resource.Success -> {
-                    progressDialog.dismiss()
-
-                    // Batasi fun fact hingga 200 kata
-                    val truncatedFunFact = resource.data?.split(" ")?.take(200)?.joinToString(" ")
-
-                    // Tampilkan fun fact dalam dialog
-                    AlertDialog.Builder(context)
-                        .setTitle("Fun Fact")
-                        .setMessage(truncatedFunFact)
-                        .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-                        .show()
-                }
-                is Resource.Error -> {
-                    progressDialog.dismiss()
-
-                    // Tampilkan pesan kesalahan jika gagal mendapatkan fun fact
-                    AlertDialog.Builder(context)
-                        .setTitle("Error")
-                        .setMessage("Failed to fetch fun fact: ${resource.message}")
-                        .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-                        .show()
-                }
-                else -> Unit
-            }
-        })
-    }
-
-
     private fun createTextView(context: Context, text: String, isHeader: Boolean = false): TextView {
         return TextView(context).apply {
             this.text = text

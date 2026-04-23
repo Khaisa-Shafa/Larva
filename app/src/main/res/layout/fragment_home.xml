@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -5,20 +6,16 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <!-- AppBarLayout untuk menampung bagian atas -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
+        android:layout_height="wrap_content">
 
-        <!-- CollapsingToolbarLayout untuk efek collapsible -->
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <!-- Bagian atas: TextView dan RecyclerView -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -28,7 +25,7 @@
                     android:id="@+id/tvBreakingNews"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="8dp"
+                    android:padding="12dp"
                     android:text="Breaking News"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -36,12 +33,11 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_slider"
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginTop="10dp" />
+                    android:layout_height="220dp" />
+
             </LinearLayout>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-        <!-- TabLayout tetap terlihat saat scrolling -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
@@ -50,30 +46,24 @@
             app:tabRippleColor="@color/custom_color_text_secondary"
             app:tabIndicatorColor="@color/custom_color_text_primary"
             app:tabSelectedTextColor="@color/custom_color_text_primary"
-            app:tabMode="fixed"
-            app:tabGravity="fill"/>
+            app:tabMode="scrollable"
+            app:tabGravity="fill" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Konten scrollable: ViewPager2 -->
-    <androidx.core.widget.NestedScrollView
+    <!-- ViewPager2 langsung tanpa NestedScrollView -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpagerHome"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/nestedScrollHome"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewpagerHome"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </androidx.core.widget.NestedScrollView>
-
-    <!-- ProgressBar jika diperlukan -->
     <ProgressBar
         android:id="@+id/progressBarHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminateTint="@color/g_gray700"
         android:visibility="gone"
         app:layout_anchor="@id/viewpagerHome"
         app:layout_anchorGravity="center" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

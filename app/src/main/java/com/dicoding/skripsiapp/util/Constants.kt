@@ -3,23 +3,32 @@ package com.dicoding.skripsiapp.util
 object Constants {
     const val USER_COLLECTION = "user"
 
-    //SPLASH
+    // SPLASH
     const val DELAY_SPLASH = 3000L
 
-    //TAG
+    // TAG
     const val TAG_REGISTER = "RegisterFragment"
 
-    //ONBOARDING
+    // ONBOARDING
     const val ONBOARDING_SP = "introductionSP"
     const val ONBOARDING_KEY = "introductionKey"
     const val FIRST_LAUNCH = "first_launch"
 
-    const val MODEL_PATH_DETECTION = "model_detection.tflite"
-    const val LABELS_PATH_DETECTION = "labels.txt"
-    const val MODEL_PATH_CLASSIFICATION = "larvae_classification_model_tes_70_15_15.tflite"
-    const val LABELS_PATH_CLASSIFICATION = "mobilenet_labels.txt"
-    const val CAMERA_PERMISSION_CODE = 100
+    // Model lama (YOLOv8 + MobileNetV3)
+    const val MODEL_PATH_DETECTION = "lama/model_detection.tflite"
+    const val LABELS_PATH_DETECTION = "lama/labels.txt"
+    const val MODEL_PATH_CLASSIFICATION = "lama/larvae_classification_model_tes_70_15_15.tflite"
+    const val LABELS_PATH_CLASSIFICATION = "lama/mobilenet_labels.txt"
 
-    const val FUNFACT_AEDES = "Click here to see funfact about Aedes"
-    const val FUNFACT_CULEX = "Click here to see funfact about Culex"
+    // Model baru (YOLO11-Seg + MobileViT)
+    const val MODEL_PATH_DETECTION_NEW = "baru/yolo11_seg.tflite"
+    const val LABELS_PATH_DETECTION_NEW = "baru/detection_labels.txt"
+    const val MODEL_PATH_CLASSIFICATION_NEW = "baru/model_float32.tflite"
+    const val LABELS_PATH_CLASSIFICATION_NEW = "baru/classification_labels.txt"
+
+    // Enum pilihan model
+    const val MODEL_YOLOV8_MOBILENETV3 = 1
+    const val MODEL_YOLO11_MOBILEVIT = 2
+
+    const val CAMERA_PERMISSION_CODE = 100
 }

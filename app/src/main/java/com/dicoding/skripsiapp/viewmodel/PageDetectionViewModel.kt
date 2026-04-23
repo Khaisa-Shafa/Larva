@@ -14,7 +14,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dicoding.skripsiapp.api.OpenAiRepository
 import com.dicoding.skripsiapp.data.BookmarkItem
 import com.dicoding.skripsiapp.data.BoundingBox
 import com.dicoding.skripsiapp.fragment.main.bookmarked.BookmarkRepository
@@ -57,9 +56,6 @@ class PageDetectionViewModel @Inject constructor(
     private val _annotatedBitmap = MutableStateFlow<Resource<Bitmap>>(Resource.Unspecified())
     val annotatedBitmap: StateFlow<Resource<Bitmap>> get() = _annotatedBitmap
 
-    private val _funFact = MutableStateFlow<Resource<String>>(Resource.Unspecified())
-    val funFact: StateFlow<Resource<String>> get() = _funFact
-
     private val _bookmarks = MutableLiveData<List<BookmarkItem>>()
     val bookmarks: LiveData<List<BookmarkItem>> get() = _bookmarks
 
@@ -74,7 +70,11 @@ class PageDetectionViewModel @Inject constructor(
     private lateinit var detector: Detector
     private lateinit var classifier: Classifier
 
+    private var cleanBitmap: Bitmap? = null
+
+
     fun initializeDetector(context: Context, modelPath: String, labelsPath: String) {
+        Log.d("ModelDebug", "Loading detector: $modelPath")  // ← tambah ini
         detector = Detector(context, modelPath, labelsPath, object : Detector.DetectorListener {
             override fun onEmptyDetect() {
                 _predictionResult.value = Resource.Success(emptyList())
@@ -87,11 +87,28 @@ class PageDetectionViewModel @Inject constructor(
                     sendToastMessage("${boundingBoxes.size} objects detected!")
                 }
             }
+
+//            private var isProcessing = false
+//
+//            override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
+//                if (isProcessing) return
+//
+//                val bitmap = lastFrameBitmap ?: return
+//                isProcessing = true
+//
+//                viewModel.updateDetectionResult(boundingBoxes, inferenceTime, bitmap)
+//
+//                lifecycleScope.launch {
+//                    delay(300) // ⬅️ penting
+//                    isProcessing = false
+//                }
+//            }
         })
         detector.setup()
     }
 
     fun initializeClassifier(context: Context, modelPath: String, labelsPath: String) {
+        Log.d("ModelDebug", "Loading classifier: $modelPath")  // ← tambah ini
         val labels = Classifier.loadLabels(context, labelsPath)
         classifier = Classifier(context, modelPath, labels)
     }
@@ -108,88 +125,102 @@ class PageDetectionViewModel @Inject constructor(
         }
     }
 
+
     fun classifyCroppedImages(originalBitmap: Bitmap, boundingBoxes: List<BoundingBox>) {
+        val bitmapToUse = cleanBitmap ?: originalBitmap
         _classificationResult.value = Resource.Loading()
         viewModelScope.launch {
             try {
-                val results = mutableListOf<Triple<String, Float, Int>>() // (Label, Confidence, Original Index)
+                val results = mutableListOf<Triple<String, Float, Int>>()
 
                 boundingBoxes.forEachIndexed { index, box ->
-                    Log.d("BoundingBox", "Class: ${box.clsName}, x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2}")
-                    Log.d("BoundingBoxProcessing", "Processing bounding box $index: ${box.clsName}")
-
-                    val croppedBitmap = cropBitmap(originalBitmap, box)
+                    val croppedBitmap = cropBitmap(bitmapToUse, box)
                     val classificationWithConfidence = classifier.classifyWithConfidence(croppedBitmap)
-                    val bestResult = classificationWithConfidence.maxByOrNull { it.second } ?: ("Unknown" to 0f)
-
-                    results.add(Triple(bestResult.first, bestResult.second, index)) // Simpan (Label, Confidence, Original Index)
-                    Log.d("ClassificationResult", "Result for bounding box $index: $bestResult")
+                    val bestResult = classificationWithConfidence.maxByOrNull { it.second } ?: ("Tidak Diketahui" to 0f)
+                    results.add(Triple(bestResult.first, bestResult.second, index))
                 }
 
-                // Mapping prioritas
-                val priorityMap = mapOf("Aedes" to 1, "Culex" to 1, "Unknown" to 0)
+                val priorityMap = mapOf("aedes" to 1, "anopheles" to 1, "culex" to 1, "Tidak Diketahui" to 0)
 
-                // Sort berdasarkan prioritas kelas (Aedes & Culex lebih dulu), lalu confidence
                 val sortedResults = results.sortedWith(
-                    compareByDescending<Triple<String, Float, Int>> { priorityMap[it.first] ?: 0 }
+                    compareByDescending<Triple<String, Float, Int>> { priorityMap[it.first.lowercase()] ?: 0 }
                         .thenByDescending { it.second }
                 )
 
-                // Reset indeks per kelas tetapi tetap mempertahankan urutan bounding box asli
                 val classCounters = mutableMapOf<String, Int>()
                 val indexedResults = sortedResults.map { (label, confidence, originalIndex) ->
                     val newIndex = classCounters.getOrDefault(label, 0) + 1
-                    classCounters[label] = newIndex // Update index per kategori
-
-                    Triple(label, confidence, originalIndex to newIndex) // (Label, Confidence, (OriginalIndex, NewIndex))
+                    classCounters[label] = newIndex
+                    Triple(label, confidence, originalIndex to newIndex)
                 }
 
-                // Urutkan kembali berdasarkan bounding box asli (bukan urutan setelah sorting)
-                val finalResults = indexedResults.sortedBy { it.third.first } // Sort by OriginalIndex
+                val finalResults = indexedResults.sortedBy { it.third.first }
 
+                // Format teks untuk tvPrediction
                 val formattedResults = finalResults.map { (label, confidence, indexes) ->
                     val (_, newIndex) = indexes
-                    "$label ($newIndex) ${String.format("%.2f", confidence * 100)}%"
+                    "$label ($newIndex) ${"%.2f".format(confidence * 100)}%"
                 }.joinToString("\n")
 
                 _classificationResult.value = Resource.Success(formattedResults)
+
+                // Overlay bounding box dengan label MobileViT
+                // Map: originalIndex -> (label, newIndex, confidence)
+                val labelMap = finalResults.associate { (label, confidence, indexes) ->
+                    indexes.first to Triple(label, indexes.second, confidence)
+                }
+                overlayWithMobileVitLabels(bitmapToUse, boundingBoxes, labelMap)
+
             } catch (e: Exception) {
                 _classificationResult.value = Resource.Error("Error during classification: ${e.message}")
             }
         }
     }
 
-//    fun classifyCroppedImages(originalBitmap: Bitmap, boundingBoxes: List<BoundingBox>) {
-//        _classificationResult.value = Resource.Loading()
-//        viewModelScope.launch {
-//            try {
-//                val results = mutableMapOf<String, Float>() // Menyimpan semua hasil klasifikasi
-//
-//                boundingBoxes.forEach { box ->
-//                    Log.d("BoundingBox", "Class: ${box.clsName}, x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2}")
-//                    val croppedBitmap = cropBitmap(originalBitmap, box)
-//                    val classificationWithConfidence = classifier.classifyWithConfidence(croppedBitmap)
-//
-//                    // Ambil hasil klasifikasi dengan confidence tertinggi untuk setiap bounding box
-//                    classificationWithConfidence.forEach { (label, confidence) ->
-//                        results[label] = (results[label] ?: 0f) + confidence
-//                    }
-//                }
-//
-//                // Urutkan hasil berdasarkan confidence tertinggi
-//                val sortedResults = results.entries.sortedByDescending { it.value }
-//
-//                // Format hasil untuk ditampilkan
-//                val formattedResults = sortedResults.joinToString("\n") { (label, confidence) ->
-//                    "$label: ${String.format("%.2f", confidence * 100)}%"
-//                }
-//
-//                _classificationResult.value = Resource.Success(formattedResults)
-//            } catch (e: Exception) {
-//                _classificationResult.value = Resource.Error("Error during classification: ${e.message}")
-//            }
-//        }
-//    }
+    // Fungsi overlay baru — pakai label dari MobileViT
+    private fun overlayWithMobileVitLabels(
+        originalBitmap: Bitmap,
+        boundingBoxes: List<BoundingBox>,
+        labelMap: Map<Int, Triple<String, Int, Float>>  // originalIndex -> (label, newIndex, confidence)
+    ) {
+        _annotatedBitmap.value = Resource.Loading()
+        try {
+            val mutableBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                ?: throw IllegalStateException("Failed to copy bitmap")
+            val canvas = Canvas(mutableBitmap)
+
+            val boxPaint = Paint().apply {
+                color = Color.RED
+                strokeWidth = 5f
+                style = Paint.Style.STROKE
+            }
+
+            val textPaint = Paint().apply {
+                color = Color.BLUE
+                textSize = mutableBitmap.width * 0.05f
+                isAntiAlias = true
+            }
+
+            boundingBoxes.forEachIndexed { index, box ->
+                val absoluteBox = convertToAbsoluteCoordinates(box, mutableBitmap.width, mutableBitmap.height)
+                canvas.drawRect(absoluteBox.x1, absoluteBox.y1, absoluteBox.x2, absoluteBox.y2, boxPaint)
+
+                val (label, newIndex, confidence) = labelMap[index]
+                    ?: Triple("Tidak Diketahui", index + 1, 0f)
+
+                canvas.drawText(
+                    "$label ($newIndex) (${"%.2f".format(confidence * 100)}%)",
+                    absoluteBox.x1,
+                    maxOf(absoluteBox.y1 - 10, textPaint.textSize),
+                    textPaint
+                )
+            }
+
+            _annotatedBitmap.value = Resource.Success(mutableBitmap)
+        } catch (e: Exception) {
+            _annotatedBitmap.value = Resource.Error("Error overlaying bounding boxes: ${e.message}")
+        }
+    }
 
     private fun cropBitmap(bitmap: Bitmap, box: BoundingBox): Bitmap {
         val absoluteBox = convertToAbsoluteCoordinates(box, bitmap.width, bitmap.height)
@@ -249,6 +280,8 @@ class PageDetectionViewModel @Inject constructor(
     fun processImage(bitmap: Bitmap, cameraImageUri: Uri?, contentResolver: ContentResolver) {
         val rotatedBitmap = rotateImageToPortrait(bitmap, cameraImageUri, contentResolver)
         val resizedBitmap = resizeBitmap(rotatedBitmap, 640, 640)
+        cleanBitmap = resizedBitmap
+        Log.d("ClassifyDebug", "cleanBitmap saved: ${cleanBitmap?.width}x${cleanBitmap?.height}")
         detectImage(resizedBitmap)
     }
 
@@ -341,36 +374,6 @@ class PageDetectionViewModel @Inject constructor(
         return Pair(confusionMatrix, classList)
     }
 
-    fun fetchFunFact(className: String) {
-        _funFact.value = Resource.Loading()
-
-        // List kata sifat acak untuk membuat prompt lebih unik
-        val randomWords = listOf("amazing", "fascinating", "shocking", "unbelievable", "intriguing")
-        val randomWord = randomWords.random() // Pilih satu kata secara acak
-
-        // List prompt dengan variasi pertanyaan
-        val prompts = listOf(
-            "Give me a $randomWord fact about the mosquito genus $className.",
-            "What's an $randomWord detail about the mosquito species $className?",
-            "Tell me something $randomWord about $className mosquitoes.",
-            "Share a rare and $randomWord fact related to $className mosquitoes.",
-            "Can you tell me an unusual fact about mosquitoes from genus $className?"
-        )
-
-        val selectedPrompt = prompts.random() // Pilih satu prompt secara acak
-        val uniquePrompt = "$selectedPrompt (Request ID: ${System.currentTimeMillis()})" // Tambahkan timestamp
-
-        val repository = OpenAiRepository()
-        viewModelScope.launch {
-            try {
-                val funFact = repository.fetchFunFact(uniquePrompt)
-                _funFact.value = Resource.Success(funFact)
-            } catch (e: Exception) {
-                _funFact.value = Resource.Error("Error fetching fun fact: ${e.message}")
-            }
-        }
-    }
-
     fun getTopPredictionClass(): String? {
         // Ambil nilai dari Resource
         val resource = predictionResult.value ?: return null
@@ -456,11 +459,11 @@ class PageDetectionViewModel @Inject constructor(
     }
 
     fun clearImageData() {
+        cleanBitmap = null  // ← tambahkan ini
         _predictionResult.value = Resource.Unspecified()
         _inferenceTime.value = Resource.Unspecified()
         _errorMessage.value = Resource.Unspecified()
         _annotatedBitmap.value = Resource.Unspecified()
-        _funFact.value = Resource.Unspecified()
         _classificationResult.value = Resource.Unspecified()
         currentImageUrl = null
     }

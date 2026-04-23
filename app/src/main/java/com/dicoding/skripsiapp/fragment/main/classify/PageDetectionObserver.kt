@@ -7,34 +7,35 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.dicoding.skripsiapp.R
 import com.dicoding.skripsiapp.databinding.FragmentPageDetectionBinding
-import com.dicoding.skripsiapp.util.Constants.LABELS_PATH_CLASSIFICATION
-import com.dicoding.skripsiapp.util.Constants.LABELS_PATH_DETECTION
-import com.dicoding.skripsiapp.util.Constants.MODEL_PATH_CLASSIFICATION
-import com.dicoding.skripsiapp.util.Constants.MODEL_PATH_DETECTION
 import com.dicoding.skripsiapp.util.DialogUtilsPrediction
 import com.dicoding.skripsiapp.util.Resource
 import com.dicoding.skripsiapp.viewmodel.PageDetectionViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.dicoding.skripsiapp.util.getModelConfig
 
 class PageDetectionObserver(
     private val lifecycleOwner: LifecycleOwner,
+    private val selectedModel: Int,
     private val pageDetectionViewModel: PageDetectionViewModel,
     private val binding: FragmentPageDetectionBinding,
     private val showLoading: (Boolean) -> Unit,
     private val showToast: (String) -> Unit
+
 ) {
     fun setupObservers() {
+        val config = getModelConfig(selectedModel)
+
         pageDetectionViewModel.initializeDetector(
             binding.root.context,
-            MODEL_PATH_DETECTION,
-            LABELS_PATH_DETECTION
+            config.detectionModel,
+            config.detectionLabels
         )
 
         pageDetectionViewModel.initializeClassifier(
             binding.root.context,
-            MODEL_PATH_CLASSIFICATION,
-            LABELS_PATH_CLASSIFICATION
+            config.classificationModel,
+            config.classificationLabels
         )
 
         lifecycleOwner.lifecycleScope.launch {
@@ -71,21 +72,25 @@ class PageDetectionObserver(
                             is Resource.Success -> {
                                 showLoading(false)
                                 val result = resource.data.orEmpty()
+                                if (result.isEmpty()) {
+                                    binding.tvPrediction.text = "Tidak ada objek terdeteksi"
+                                    return@collect
+                                }
 
                                 val predictionText = if (result.isNotEmpty()) {
-                                    result.joinToString("\n") { "${it.clsName}: ${it.cnf * 100}%" }
+                                    result.joinToString("\n") { box ->
+                                        val conf = box.cnf.coerceIn(0f, 1f)
+                                        "${box.clsName}: ${String.format("%.2f", conf * 100)}%"
+                                    }
                                 } else {
                                     "No objects detected"
                                 }
                                 binding.tvPrediction.text = predictionText
 
-                                val topClass = result.maxByOrNull { it.cnf }?.clsName
-                                updateFunFactText(topClass)
-
                                 val drawable = binding.imageVieww.drawable
                                 if (drawable != null) {
                                     val originalBitmap = drawable.toBitmap()
-                                    pageDetectionViewModel.overlayBoundingBoxes(originalBitmap, result)
+                                    //pageDetectionViewModel.overlayBoundingBoxes(originalBitmap, result)
                                     pageDetectionViewModel.classifyCroppedImages(originalBitmap, result)
                                 }
                             }
@@ -112,31 +117,6 @@ class PageDetectionObserver(
                                 showLoading(false)
                                 Log.e("PageDetection", "Error during classification: ${resource.message}")
                                 showToast("Error during classification: ${resource.message}")
-                            }
-                            else -> Unit
-                        }
-                    }
-                }
-
-                launch {
-                    pageDetectionViewModel.funFact.collect { resource ->
-                        when (resource) {
-                            is Resource.Loading -> {
-                                showLoading(true)
-                                binding.tvFunfact.text = "Fetching fun fact..."
-                            }
-                            is Resource.Success -> {
-                                showLoading(false)
-                                resource.data?.let { funFact ->
-                                    DialogUtilsPrediction.showFunFactDialog(binding.root.context, funFact) {
-                                        binding.tvFunfact.text = "Tap for a fun fact!"
-                                    }
-                                }
-                            }
-                            is Resource.Error -> {
-                                showLoading(false)
-                                binding.tvFunfact.text = "Failed to fetch fun fact: ${resource.message}"
-                                showToast("Could not fetch fun fact. Please try again.")
                             }
                             else -> Unit
                         }
@@ -187,19 +167,6 @@ class PageDetectionObserver(
                     }
                 }
             }
-        }
-    }
-
-    private fun updateFunFactText(topClass: String?) {
-        if (topClass.equals("Aedes", ignoreCase = true) || topClass.equals(
-                "Culex",
-                ignoreCase = true
-            )
-        ) {
-            binding.tvFunfact.visibility = View.VISIBLE
-            binding.tvFunfact.text = "Tap for a fun fact about $topClass!"
-        } else {
-            binding.tvFunfact.visibility = View.GONE
         }
     }
 }

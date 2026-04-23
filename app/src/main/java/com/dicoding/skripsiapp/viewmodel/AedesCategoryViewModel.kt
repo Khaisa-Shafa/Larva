@@ -96,7 +96,7 @@ class AedesCategoryViewModel@Inject constructor(
                 firestore
                     .collection("News")
                     .whereEqualTo("category", "Aedes")
-                    .orderBy("id")
+//                    .orderBy("id")
                     .limit(aedesPagingInfo.aedesNewsPage * 10)
                     .get()
                     .addOnSuccessListener { result ->

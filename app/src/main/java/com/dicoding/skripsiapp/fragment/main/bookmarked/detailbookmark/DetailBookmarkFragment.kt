@@ -125,10 +125,6 @@ class DetailBookmarkFragment : Fragment() {
             bookmarkDetailViewModel.bookmarkItem.value?.let { showPopupMenu(it.type) }
         }
 
-        binding.tvFunFact.setOnClickListener {
-            handleFunFactClick()
-        }
-
         binding.ivLocation.setOnClickListener {
             bookmarkDetailViewModel.bookmarkItem.value?.let { bookmark ->
                 Log.d("BookmarkLocation", "Latitude: ${bookmark.latitude}, Longitude: ${bookmark.longitude}") // Log nilai latitude dan longitude
@@ -169,9 +165,6 @@ class DetailBookmarkFragment : Fragment() {
                     bookmarkDetailViewModel.bookmarkItem.collectLatest { item ->
                         item?.let {
                             updateBookmarkDetail(it)
-
-                            // Tampilkan tombol fun fact hanya jika ada class name
-                            binding.tvFunFact.visibility = if (it.fullClassificationResults.isNotEmpty()) View.VISIBLE else View.GONE
                         }
                     }
                 }
@@ -336,19 +329,6 @@ class DetailBookmarkFragment : Fragment() {
             ?: Toast.makeText(requireContext(), "Failed to load data", Toast.LENGTH_SHORT).show()
     }
 
-    private fun handleFunFactClick(){
-        val className = bookmarkDetailViewModel.bookmarkItem.value?.fullClassificationResults
-
-        if (className.isNullOrBlank()) {
-            Toast.makeText(requireContext(), "Kelas tidak ditemukan.", Toast.LENGTH_SHORT).show()
-        } else {
-            fetchFunFactAndShowDialog(className)
-        }
-    }
-
-    private fun fetchFunFactAndShowDialog(className: String) {
-        DialogUtilsClassification.showFunFactDialog(requireContext(), viewLifecycleOwner, className, pageClassificationViewModel)
-    }
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

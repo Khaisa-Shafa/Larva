@@ -9,7 +9,7 @@
         android:id="@+id/homeFragment"
         android:name="com.dicoding.skripsiapp.fragment.main.home.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_newsDetailFragment"
             app:destination="@id/newsDetailFragment" />
@@ -27,7 +27,7 @@
         android:id="@+id/favoriteFragment"
         android:name="com.dicoding.skripsiapp.fragment.main.favorite.FavoriteFragment"
         android:label="fragment_favorite"
-        tools:layout="@layout/fragment_favorite" >
+        tools:layout="@layout/fragment_favorite">
         <action
             android:id="@+id/action_favoriteFragment_to_newsDetailFragment"
             app:destination="@id/newsDetailFragment" />
@@ -36,7 +36,7 @@
         android:id="@+id/profileFragment"
         android:name="com.dicoding.skripsiapp.fragment.main.profile.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" >
+        tools:layout="@layout/fragment_profile">
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
@@ -66,7 +66,7 @@
         android:id="@+id/newsDetailFragment"
         android:name="com.dicoding.skripsiapp.fragment.main.home.NewsDetailFragment"
         android:label="fragment_news_detail"
-        tools:layout="@layout/fragment_news_detail" >
+        tools:layout="@layout/fragment_news_detail">
         <argument
             android:name="news"
             app:argType="com.dicoding.skripsiapp.data.News" />
@@ -76,7 +76,7 @@
         android:id="@+id/pageDetectionFragment"
         android:name="com.dicoding.skripsiapp.fragment.main.classify.PageDetectionFragment"
         android:label="fragment_page_detection"
-        tools:layout="@layout/fragment_page_detection" >
+        tools:layout="@layout/fragment_page_detection">
         <action
             android:id="@+id/action_pageDetectionFragment_to_detectionViewPagerFragment"
             app:destination="@id/detectionViewPagerFragment" />

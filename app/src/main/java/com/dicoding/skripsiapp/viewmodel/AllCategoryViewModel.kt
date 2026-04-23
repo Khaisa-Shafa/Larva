@@ -40,6 +40,7 @@ class AllCategoryViewModel  @Inject constructor(
     private val paginInfo = PagingInfo()
 
     init {
+        Log.d("FirestoreDebug", "ViewModel initialized")
         fetchSliderNews()
         fetchAllNews()
         fetchFavoriteNews()
@@ -106,13 +107,14 @@ class AllCategoryViewModel  @Inject constructor(
             try {
                 _sliderNews.emit(Resource.Loading())
 
-                val categories = listOf("Aedes", "Culex", "Another")
-                val result = firestore.collection("News")
+                val categories = listOf("Aedes", "Culex", "Anopheles")
+                val result = firestore.collection("news")
                     .whereIn("category", categories)
                     .get()
-                    .await() // Gunakan await() agar bisa ditangani dalam coroutine
+                    .await()
 
                 val sliderNewsList = result.toObjects(News::class.java)
+                Log.d("FirestoreDebug", "Slider news count: ${sliderNewsList.size}")
                 _sliderNews.emit(Resource.Success(sliderNewsList))
 
             } catch (e: Exception) {
@@ -123,31 +125,30 @@ class AllCategoryViewModel  @Inject constructor(
     }
 
     fun fetchAllNews() {
-        if (!paginInfo.isPagingEnd) {
-            viewModelScope.launch {
-                try {
-                    _allNews.emit(Resource.Loading())
+        viewModelScope.launch {
+            try {
+                _allNews.emit(Resource.Loading())
+                Log.d("FirestoreDebug", "Fetching news...")
 
-                    val categories = listOf("Aedes", "Culex", "Another")
+                val categories = listOf("Aedes", "Culex", "Anopheles")
 
-                    val result = firestore.collection("News")
-                        .whereIn("category", categories)
-                        .orderBy("id")
-                        .limit(paginInfo.allNewsPage * 10)
-                        .get()
-                        .await()
+                val result = firestore.collection("News")  // coba ganti "News" → "news" kalau tidak muncul
+                    .whereIn("category", categories)
+                    .get()
+                    .await()
 
-                    val allNewsList = result.toObjects(News::class.java)
-                    paginInfo.isPagingEnd = allNewsList == paginInfo.oldAllNews
-                    paginInfo.oldAllNews = allNewsList
-
-                    _allNews.emit(Resource.Success(allNewsList))
-                    paginInfo.allNewsPage++
-
-                } catch (e: Exception) {
-                    _allNews.emit(Resource.Error(e.message.toString()))
-                    Log.e("FirestoreError", "Failed to fetch all news: ${e.message}")
+                Log.d("FirestoreDebug", "Total docs: ${result.documents.size}")
+                result.documents.forEach { doc ->
+                    Log.d("FirestoreDebug", "Doc: ${doc.id} → ${doc.data}")
                 }
+
+                val allNewsList = result.toObjects(News::class.java)
+                Log.d("FirestoreDebug", "All news count: ${allNewsList.size}")
+                _allNews.emit(Resource.Success(allNewsList))
+
+            } catch (e: Exception) {
+                _allNews.emit(Resource.Error(e.message.toString()))
+                Log.e("FirestoreError", "Failed: ${e.message}")
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.dicoding.skripsiapp.R
 import com.dicoding.skripsiapp.data.News
 import com.dicoding.skripsiapp.databinding.SliderItemBinding
 
@@ -14,10 +15,16 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.CarouselViewHolder>(
     inner class CarouselViewHolder(private val binding: SliderItemBinding): RecyclerView.ViewHolder(binding.root){
         fun bind(news: News) {
             binding.apply {
-                Glide.with(itemView).load(news.contentImageUrls[0]).into(sliderImage)
+                if (news.contentImageUrls.isNotEmpty()) {
+                    Glide.with(itemView)
+                        .load(news.contentImageUrls[0])
+                        .placeholder(R.drawable.ic_error)
+                        .into(sliderImage)
+                } else {
+                    sliderImage.setImageResource(R.drawable.ic_error)
+                }
                 tvJudul.text = news.title
                 tvNewsSource.text = news.newsSource
-
             }
         }
     }

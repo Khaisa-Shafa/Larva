@@ -25,6 +25,7 @@
     <color name="custom_color_white">#FFFFFF</color>
     <color name="custom_color_black">#000000</color>
     <color name="custom_color_profile">#f5f5f5</color>
+    <color name="g_gray600">#808080</color>
 
     <color name="custom_color_card_profile">#f1f1f1</color>
 

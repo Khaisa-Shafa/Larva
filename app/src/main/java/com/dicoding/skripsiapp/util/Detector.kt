@@ -3,6 +3,7 @@ package com.dicoding.skripsiapp.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -19,6 +20,8 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class Detector(
     private val context: Context,
@@ -53,30 +56,30 @@ class Detector(
     fun setup() {
         val model = FileUtil.loadMappedFile(context, modelPath)
         val options = Interpreter.Options()
-
-        // Set the number of threads using the public method
-        options.setNumThreads(4) // Set the desired number of threads
-
+        options.setNumThreads(4)
         interpreter = Interpreter(model, options)
 
         val inputShape = interpreter?.getInputTensor(0)?.shape() ?: return
-        val outputShape = interpreter?.getOutputTensor(0)?.shape() ?: return
-
         tensorWidth = inputShape[1]
         tensorHeight = inputShape[2]
-        numChannel = outputShape[1]
-        numElements = outputShape[2]
+
+        val output0Shape = interpreter?.getOutputTensor(0)?.shape() ?: return
+        Log.d("Detector", "Output0 shape: ${output0Shape.contentToString()}")
+
+        // Dinamis, tidak hardcode
+        numChannel = output0Shape[1]
+        numElements = output0Shape[2]
+
+        Log.d("Detector", "numChannel: $numChannel, numElements: $numElements")
 
         try {
             val inputStream: InputStream = context.assets.open(labelPath)
             val reader = BufferedReader(InputStreamReader(inputStream))
-
             var line: String? = reader.readLine()
             while (line != null && line != "") {
                 labels.add(line)
                 line = reader.readLine()
             }
-
             reader.close()
             inputStream.close()
         } catch (e: IOException) {
@@ -96,28 +99,52 @@ class Detector(
 
     fun detect(frame: Bitmap) {
         interpreter ?: return
-        if (tensorWidth == 0) return
-        if (tensorHeight == 0) return
-        if (numChannel == 0) return
-        if (numElements == 0) return
-
-        var inferenceTime = SystemClock.uptimeMillis()
 
         val resizedBitmap = Bitmap.createScaledBitmap(frame, tensorWidth, tensorHeight, false)
 
-        val tensorImage = TensorImage(DataType.UINT8)
-        tensorImage.load(resizedBitmap)
-        val processedImage = imageProcessor.process(tensorImage)
-        val imageBuffer = processedImage.buffer
+        val inputBuffer = ByteBuffer.allocateDirect(1 * tensorWidth * tensorHeight * 3 * 4)
+        inputBuffer.order(ByteOrder.nativeOrder())
 
-        val output = TensorBuffer.createFixedSize(intArrayOf(1 , numChannel, numElements), OUTPUT_IMAGE_TYPE)
-        interpreter?.run(imageBuffer, output.buffer)
+        val pixels = IntArray(tensorWidth * tensorHeight)
+        resizedBitmap.getPixels(pixels, 0, tensorWidth, 0, 0, tensorWidth, tensorHeight)
 
+        for (pixel in pixels) {
+            inputBuffer.putFloat(((pixel shr 16) and 0xFF) / 255f)
+            inputBuffer.putFloat(((pixel shr 8) and 0xFF) / 255f)
+            inputBuffer.putFloat((pixel and 0xFF) / 255f)
+        }
 
-        val bestBoxes = bestBox(output.floatArray)
-        inferenceTime = SystemClock.uptimeMillis() - inferenceTime
+        // Dinamis berdasarkan numChannel dan numElements
+        val output0 = Array(1) { Array(numChannel) { FloatArray(numElements) } }
 
+        // Output ke-2 hanya ada di YOLO11-Seg, cek dulu jumlah output tensor
+        val outputCount = interpreter?.outputTensorCount ?: 1
 
+        val startTime = SystemClock.uptimeMillis()
+
+        if (outputCount > 1) {
+            val output1Shape = interpreter?.getOutputTensor(1)?.shape()
+            Log.d("Detector", "Output1 shape: ${output1Shape?.contentToString()}")
+            val output1 = Array(1) { Array(output1Shape!![1]) { Array(output1Shape[2]) { FloatArray(output1Shape[3]) } } }
+            val outputs = mapOf(0 to output0, 1 to output1)
+            interpreter?.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
+        } else {
+            val outputs = mapOf(0 to output0)
+            interpreter?.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
+        }
+
+        val inferenceTime = SystemClock.uptimeMillis() - startTime
+
+        // Flatten output0
+        val flatOutput = FloatArray(numChannel * numElements)
+        var index = 0
+        for (i in 0 until numChannel) {
+            for (j in 0 until numElements) {
+                flatOutput[index++] = output0[0][i][j]
+            }
+        }
+
+        val bestBoxes = bestBox(flatOutput)
         if (bestBoxes == null) {
             detectorListener.onEmptyDetect()
             return
@@ -135,7 +162,7 @@ class Detector(
             var maxIdx = -1
             var j = 4
             var arrayIdx = c + numElements * j
-            while (j < numChannel){
+            while (j < 4 + labels.size){
                 if (array[arrayIdx] > maxConf) {
                     maxConf = array[arrayIdx]
                     maxIdx = j - 4

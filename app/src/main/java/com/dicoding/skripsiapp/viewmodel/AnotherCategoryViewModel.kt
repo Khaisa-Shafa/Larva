@@ -95,9 +95,8 @@ class AnotherCategoryViewModel @Inject constructor(
                 _anotherNews.emit(Resource.Loading())
 
                 firestore
-                    .collection("News")
-                    .whereEqualTo("category", "Another")
-                    .orderBy("id")
+                    .collection("news")
+                    .whereEqualTo("category", "Anopheles")
                     .limit(anotherPagingInfo.anotherNewsPage * 10)
                     .get()
                     .addOnSuccessListener { result ->

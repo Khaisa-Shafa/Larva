@@ -17,7 +17,6 @@ class Classifier(
     private val interpreter: Interpreter
 
     init {
-        // Memuat model TensorFlow Lite
         val fileDescriptor = context.assets.openFd(modelPath)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
@@ -25,63 +24,65 @@ class Classifier(
         val declaredLength = fileDescriptor.declaredLength
         val buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
         interpreter = Interpreter(buffer)
+
+        val inputShape = interpreter.getInputTensor(0).shape()
+        Log.d("Classifier", "Input shape: ${inputShape.contentToString()}")
     }
 
     fun classifyWithConfidence(bitmap: Bitmap): List<Pair<String, Float>> {
-        val inputBuffer = preprocessImage(bitmap) // Konversi gambar ke input yang sesuai
+        val inputBuffer = preprocessImage(bitmap)
         val outputBuffer = Array(1) { FloatArray(labels.size) }
 
         interpreter.run(inputBuffer, outputBuffer)
 
-        // Cetak semua skor untuk debugging
-        outputBuffer[0].forEachIndexed { index, score ->
-            Log.d("Classifier", "Class: ${labels[index]}, Score: ${score * 100}%")
+        // Terapkan softmax karena output adalah logits mentah
+        val probabilities = softmax(outputBuffer[0])
+
+        probabilities.forEachIndexed { index, score ->
+            Log.d("Classifier_SOFTMAX", "Class: ${labels[index]}, Score: ${score * 100}%")
         }
 
-        // Ambil semua label dengan confidence lebih dari 0.01
-        val results = outputBuffer[0]
+        val results = probabilities
             .mapIndexed { index, score -> labels[index] to score }
-            .filter { it.second > 0.001 } // Ambil kelas yang skornya > 1%
+            .filter { it.second > 0.001f }
 
-        // Jika tidak ada yang melebihi threshold, kembalikan "Tidak Diketahui"
         return if (results.isNotEmpty()) results else listOf("Tidak Diketahui" to 1.0f)
     }
 
-
-    // Fungsi untuk mengklasifikasikan gambar
     fun classify(bitmap: Bitmap): String {
-        Log.d("Classifier", "Starting classification for a cropped image...")
+        Log.d("Classifier", "Starting classification...")
 
-        // Preprocess gambar (ubah ke ByteBuffer)
         val inputBuffer = preprocessImage(bitmap)
-
-        // Menyiapkan output buffer
         val outputBuffer = Array(1) { FloatArray(labels.size) }
 
-        // Menjalankan inferensi
         interpreter.run(inputBuffer, outputBuffer)
 
-        // Cetak skor kepercayaan untuk semua kelas
-        outputBuffer[0].forEachIndexed { index, score ->
-            Log.d("Classifier", "Class: ${labels[index]}, Score: $score")
+        // Terapkan softmax
+        val probabilities = softmax(outputBuffer[0])
+
+        probabilities.forEachIndexed { index, score ->
+            Log.d("Classifier", "Class: ${labels[index]}, Score: ${score * 100}%")
         }
 
-        // Postprocess hasil (ambil label dengan skor tertinggi)
-        val maxScore = outputBuffer[0].maxOrNull() ?: 0f
-        val maxIndex = outputBuffer[0].indexOfFirst { it == maxScore }
-        val result = if (maxScore > 0.3) labels[maxIndex] else "Tidak Diketahui"
-        Log.d("Classifier", "Max score: $maxScore, Label: ${labels[maxIndex]}")
-        // Log hasil klasifikasi
-        Log.d("Classifier", "Classification result: $result")
+        val maxScore = probabilities.maxOrNull() ?: 0f
+        val maxIndex = probabilities.indexOfFirst { it == maxScore }
+        val result = if (maxScore > 0.3f) labels[maxIndex] else "Tidak Diketahui"
 
+        Log.d("Classifier", "Result: $result (${"%.2f".format(maxScore * 100)}%)")
         return result
     }
 
-    // Preprocess gambar (ubah ke ByteBuffer)
+    private fun softmax(logits: FloatArray): FloatArray {
+        val maxLogit = logits.maxOrNull() ?: 0f
+        val exps = logits.map { Math.exp((it - maxLogit).toDouble()).toFloat() }
+        val sumExps = exps.sum()
+        return exps.map { it / sumExps }.toFloatArray()
+    }
+
     private fun preprocessImage(bitmap: Bitmap): ByteBuffer {
-        val inputSize = 360 // Sesuaikan dengan ukuran input model (360x360)
+        val inputSize = interpreter.getInputTensor(0).shape()[1] // baca dari model langsung
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
-        val byteBuffer = ByteBuffer.allocateDirect(4 * inputSize * inputSize * 3) // 4 bytes per float, 3 channels (RGB)
+        val byteBuffer = ByteBuffer.allocateDirect(4 * inputSize * inputSize * 3)
         byteBuffer.order(ByteOrder.nativeOrder())
 
         val intValues = IntArray(inputSize * inputSize)
@@ -91,24 +92,18 @@ class Classifier(
         for (i in 0 until inputSize) {
             for (j in 0 until inputSize) {
                 val pixelValue = intValues[pixel++]
-                val r = (pixelValue shr 16) and 0xFF // Red channel
-                val g = (pixelValue shr 8) and 0xFF  // Green channel
-                val b = pixelValue and 0xFF          // Blue channel
-
-                // Masukkan ke ByteBuffer dalam urutan RGB
-                byteBuffer.putFloat(r.toFloat()) // Red channel
-                byteBuffer.putFloat(g.toFloat()) // Green channel
-                byteBuffer.putFloat(b.toFloat()) // Blue channel
+                val r = (pixelValue shr 16) and 0xFF
+                val g = (pixelValue shr 8) and 0xFF
+                val b = pixelValue and 0xFF
+                byteBuffer.putFloat(r / 255f)
+                byteBuffer.putFloat(g / 255f)
+                byteBuffer.putFloat(b / 255f)
             }
         }
-
         return byteBuffer
     }
 
-
-
     companion object {
-        // Fungsi untuk memuat label dari file
         fun loadLabels(context: Context, labelsPath: String): List<String> {
             return context.assets.open(labelsPath).bufferedReader().useLines { it.toList() }
         }

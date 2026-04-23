@@ -48,15 +48,15 @@
                         android:layout_marginStart="4dp"
                         android:text="Detail News"
                         android:textColor="@color/custom_color_black"
-                        android:textSize="20sp"
+                        android:textSize="17sp"
                         app:layout_constraintBottom_toBottomOf="@+id/ivBack"
                         app:layout_constraintStart_toEndOf="@+id/ivBack"
                         app:layout_constraintTop_toTopOf="@+id/ivBack" />
 
                     <ImageView
                         android:id="@+id/ivLink"
-                        android:layout_width="33dp"
-                        android:layout_height="33dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:layout_marginEnd="8dp"
                         android:src="@drawable/ic_link"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -206,7 +206,7 @@
                 android:id="@+id/tvDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="2dp"
                 android:layout_marginEnd="16dp"
                 android:justificationMode="inter_word"
                 android:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen"
@@ -216,7 +216,7 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/cardView"
                 app:layout_constraintTop_toBottomOf="@+id/cardView"
-                app:layout_constraintVertical_bias="0.504" />
+                app:layout_constraintVertical_bias="0.205" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

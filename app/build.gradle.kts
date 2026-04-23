@@ -43,6 +43,7 @@ android {
     buildFeatures{
         viewBinding = true
         mlModelBinding = true
+        buildConfig = true
     }
 }
 
@@ -59,6 +60,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
 
     //hilt + firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation(libs.hilt.android)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
