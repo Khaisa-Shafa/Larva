@@ -6,5 +6,6 @@ plugins {
     alias(libs.plugins.google.gms.google.services) apply false
     id("com.google.devtools.ksp") version "2.0.21-1.0.25" apply false
     id("androidx.navigation.safeargs.kotlin") version "2.8.4" apply false
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
 }
 

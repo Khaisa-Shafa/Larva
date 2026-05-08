@@ -20,7 +20,7 @@ import com.dicoding.skripsiapp.adapter.CarouselAdapter
 import com.dicoding.skripsiapp.databinding.FragmentHomeBinding
 import com.dicoding.skripsiapp.fragment.main.categories.AedesCategoryFragment
 import com.dicoding.skripsiapp.fragment.main.categories.AllCategoryFragment
-import com.dicoding.skripsiapp.fragment.main.categories.AnotherCategoryFragment
+import com.dicoding.skripsiapp.fragment.main.categories.AnophelesCategoryFragment
 import com.dicoding.skripsiapp.fragment.main.categories.CulexCategoryFragment
 import com.dicoding.skripsiapp.util.Resource
 import com.dicoding.skripsiapp.util.showBottomNavigationView
@@ -79,7 +79,7 @@ class HomeFragment : Fragment() {
 
         // Handle slider news click
         sliderNewsAdapter.onClick = {
-            val b = Bundle().apply { putParcelable("news", it) }
+            val b = Bundle().apply { putParcelable("News", it) }
             findNavController().navigate(R.id.action_homeFragment_to_newsDetailFragment, b)
         }
 
@@ -115,8 +115,8 @@ class HomeFragment : Fragment() {
         val categoriesFragment = arrayListOf<Fragment>(
             AllCategoryFragment(),
             AedesCategoryFragment(),
-            CulexCategoryFragment(),
-            AnotherCategoryFragment()
+            AnophelesCategoryFragment(),
+            CulexCategoryFragment()
         )
 
         binding.viewpagerHome.apply {
@@ -170,6 +170,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         showBottomNavigationView()
+        viewModel.fetchSliderNews()
     }
 
     override fun onDestroyView() {

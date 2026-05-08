@@ -40,4 +40,15 @@ class DetectionViewPagerViewModel @Inject constructor(
         }
     }
 
+    fun saveBookmark(bookmark: BookmarkItem, userId: String) {
+        viewModelScope.launch {
+            try {
+                bookmarkRepository.addBookmark(bookmark, userId)
+                Log.d("BookmarkViewModel", "Bookmark saved: ${bookmark.id}")
+            } catch (e: Exception) {
+                Log.e("BookmarkViewModel", "Error saving bookmark: ${e.message}")
+            }
+        }
+    }
+
 }

@@ -18,8 +18,10 @@ package com.jiangdg.ausbc.camera
 import android.content.ContentValues
 import android.content.Context
 import android.hardware.usb.UsbDevice
+import android.media.ImageReader
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import com.jiangdg.ausbc.R
 import com.jiangdg.ausbc.callback.IDeviceConnectCallBack
 import com.jiangdg.ausbc.callback.IPreviewDataCallBack
@@ -110,6 +112,12 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
     }
 
     override fun startPreviewInternal() {
+        val device = mDevSettableFuture?.get()
+        val ctrlBlock = mCtrlBlockSettableFuture?.get()
+        if (device == null || ctrlBlock == null) {
+            Logger.w(TAG, "startPreviewInternal: device/ctrlBlock null, skip")
+            return
+        }
         try {
             createCamera()
             realStartPreview()
@@ -123,89 +131,113 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
     private fun createCamera(): Boolean? {
         val ctrlBlock = mCtrlBlockSettableFuture?.get()
         val device = mDevSettableFuture?.get()
-        device ?: return null
-        ctrlBlock ?: return null
+        Logger.e(TAG, "createCamera: device=$device, ctrlBlock=$ctrlBlock")
+
+        device ?: run { Logger.e(TAG, "createCamera: device is NULL!"); return null }
+        ctrlBlock ?: run { Logger.e(TAG, "createCamera: ctrlBlock is NULL!"); return null }
+
         getRequest()?.let { request ->
-            val previewWidth = request.previewWidth
-            val previewHeight = request.previewHeight
             request.cameraId = device.deviceId.toString()
             mUVCCamera = UVCCamera().apply {
-                open(ctrlBlock)
-            }
-            if (! isPreviewSizeSupported(previewWidth, previewHeight)) {
-                postCameraStatus(CameraStatus(CameraStatus.ERROR_PREVIEW_SIZE, "unsupported preview size(${request.previewWidth}, ${request.previewHeight})"))
-                Logger.e(TAG, " unsupported preview size(${request.previewWidth}, ${request.previewHeight})")
-                return null
-            }
-            try {
-                mUVCCamera?.setPreviewSize(
-                    request.previewWidth,
-                    request.previewHeight,
-                    MIN_FS,
-                    MAX_FS,
-                    UVCCamera.FRAME_FORMAT_MJPEG,
-                    UVCCamera.DEFAULT_BANDWIDTH
-                )
-            } catch (e: Exception) {
                 try {
-                    Logger.w(TAG, " setPreviewSize failed ${e.localizedMessage}, try yuv format...")
-                    if (! isPreviewSizeSupported(previewWidth, previewHeight)) {
-                        postCameraStatus(CameraStatus(CameraStatus.ERROR_PREVIEW_SIZE, "unsupported preview size(${request.previewWidth}, ${request.previewHeight})"))
-                        Logger.e(TAG, " unsupported preview size(${request.previewWidth}, ${request.previewHeight})")
-                        return null
-                    }
-                    mUVCCamera?.setPreviewSize(
-                        request.previewWidth,
-                        request.previewHeight,
-                        MIN_FS,
-                        MAX_FS,
-                        UVCCamera.FRAME_FORMAT_YUYV,
-                        UVCCamera.DEFAULT_BANDWIDTH
-                    )
+                    open(ctrlBlock)
+                    Logger.e(TAG, "✅ open berhasil")
                 } catch (e: Exception) {
-                    postCameraStatus(CameraStatus(CameraStatus.ERROR, "setPreviewSize failed, err = ${e.localizedMessage}"))
-                    Logger.e(TAG, " setPreviewSize failed", e)
-                    return null
+                    Logger.e(TAG, "open failed: ${e.message}, retrying...")
+                    Thread.sleep(500)
+                    try {
+                        open(ctrlBlock)
+                    } catch (e2: Exception) {
+                        Logger.e(TAG, "open failed second: ${e2.message}")
+                        throw e2
+                    }
                 }
             }
-            mUVCCamera?.setFrameCallback(frameCallBack, UVCCamera.PIXEL_FORMAT_YUV420SP)
-            Logger.i(TAG, " createCamera success! request = $request")
+
+            Thread.sleep(200)
+
+            Logger.e(TAG, "Supported sizes: ${mUVCCamera?.supportedSizeList}")
+
+            // FIX: Satu loop kombinasi saja, tidak perlu blok try-catch terpisah di atas
+            // Urutan: bandwidth rendah dulu (lebih stabil untuk device dengan USB bandwidth terbatas)
+            val combinations = listOf(
+                Triple(640, 480, 0.25f),
+                Triple(320, 240, 0.25f),
+                Triple(640, 480, 0.5f),
+                Triple(320, 240, 0.5f),
+            )
+
+
+            var previewSet = false
+
+            for ((w, h, bw) in combinations) {
+                try {
+                    mUVCCamera?.setPreviewSize(w, h, MIN_FS, MAX_FS, UVCCamera.FRAME_FORMAT_MJPEG, bw)
+                    Logger.e(TAG, "✅ setPreviewSize MJPEG ${w}x${h} bw=$bw berhasil")
+                    previewSet = true
+                    break
+                } catch (e: Exception) {
+                    Logger.e(TAG, "❌ MJPEG ${w}x${h} bw=$bw gagal: ${e.message}")
+                }
+            }
+
+            if (!previewSet) {
+                Logger.e(TAG, "❌ Semua kombinasi YUYV gagal, coba MJPEG...")
+                // Fallback ke MJPEG jika YUYV tidak support
+                for ((w, h, bw) in combinations) {
+                    try {
+                        mUVCCamera?.setPreviewSize(w, h, MIN_FS, MAX_FS, UVCCamera.FRAME_FORMAT_MJPEG, bw)
+                        Logger.e(TAG, "✅ setPreviewSize MJPEG ${w}x${h} bw=$bw berhasil")
+                        previewSet = true
+                        break
+                    } catch (e: Exception) {
+                        Logger.e(TAG, "❌ setPreviewSize MJPEG ${w}x${h} bw=$bw gagal: ${e.message}")
+                    }
+                }
+            }
+
+            if (!previewSet) Logger.e(TAG, "❌ Semua kombinasi gagal!")
+
+            // FIX: Gunakan PIXEL_FORMAT_YUV agar data yang diterima frameCallBack
+            // adalah YUYV yang valid, konsisten dengan konversi yuyvToBitmap di Activity
+            // Di createCamera(), ganti:
+//            mUVCCamera?.setFrameCallback(frameCallBack, UVCCamera.PIXEL_FORMAT_RAW)
+//            Logger.e(TAG, "✅ setFrameCallback PIXEL_FORMAT_RAW")
         }
         return true
     }
 
-    private fun isPreviewSizeSupported(previewWidth: Int, previewHeight: Int): Boolean {
-        return getAllPreviewSizes()?.find {
-            it.width == previewWidth && it.height == previewHeight
-        } != null
-    }
+    private var imageReader: ImageReader? = null
 
     private fun realStartPreview(): Boolean? {
         try {
             val st = getSurfaceTexture()
             val holder = getSurfaceHolder()
-            if (st == null && holder == null) {
-                postCameraStatus(CameraStatus(CameraStatus.ERROR, "surface is null"))
-                Logger.e(TAG, " SurfaceTexture or SurfaceHolder cannot be null.")
-                return null
-            }
-            if (st != null) {
-                mUVCCamera?.setPreviewTexture(st)
-            } else {
-                mUVCCamera?.setPreviewDisplay(holder)
-            }
+            Logger.e(TAG, "realStartPreview: st=$st, holder=$holder")
+
             mUVCCamera?.autoFocus = true
             mUVCCamera?.autoWhiteBlance = true
+            Logger.e(TAG, "startPreview called, isPreviewing=${mIsPreviewing.get()}")
             mUVCCamera?.startPreview()
+            Logger.e(TAG, "startPreview done")
+
+            Thread.sleep(200)
+
+            // FIX: Set frameCallback TANPA setPreviewTexture
+            // Device ST301 mungkin tidak bisa streaming ke texture DAN frameCallback sekaligus
+            mUVCCamera?.setFrameCallback(frameCallBack, UVCCamera.PIXEL_FORMAT_RAW)
+            Logger.e(TAG, "✅ setFrameCallback dipasang, SKIP setPreviewTexture")
+
+            // Jangan set texture — biarkan frameCallback yang handle display
+            // if (st != null) mUVCCamera?.setPreviewTexture(st)
+
             mUVCCamera?.updateCameraParams()
             mIsPreviewing.set(true)
+
+            Logger.e(TAG, "mPreviewDataCbList size = ${mPreviewDataCbList.size}")
+
             getRequest()?.apply {
-                postCameraStatus(
-                    CameraStatus(
-                        CameraStatus.START,
-                        Pair(previewWidth, previewHeight).toString()
-                    )
-                )
+                postCameraStatus(CameraStatus(CameraStatus.START, Pair(previewWidth, previewHeight).toString()))
             }
             val dev = mDevSettableFuture?.get().apply {
                 mDevConnectCallBack?.onConnectDev(this)
@@ -222,14 +254,17 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
     }
 
     override fun stopPreviewInternal() {
-        if (Utils.debugCamera && mIsPreviewing.get()) {
-            Logger.i(TAG, "stopPreviewInternal")
-        }
         mRequestPermission.set(false)
         mIsPreviewing.set(false)
-        mUVCCamera?.stopPreview()
-        mUVCCamera?.destroy()
+        val camera = mUVCCamera
         mUVCCamera = null
+        Thread {
+            try {
+                camera?.destroy()
+            } catch (e: Exception) {
+                Logger.e(TAG, "destroy error: ${e.message}")
+            }
+        }.start()
         postCameraStatus(CameraStatus(CameraStatus.STOP))
     }
 
@@ -363,7 +398,6 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                 }
             }
             aspectRatio ?: return previewSizeList
-            // aspect ratio list or all
             val aspectList = mutableListOf<PreviewSize>()
             aspectList.clear()
             cameraInfo?.cameraPreviewSizes?.forEach { size ->
@@ -385,11 +419,6 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
             return
         }
         mUsbMonitor = USBMonitor(getContext(), object : USBMonitor.OnDeviceConnectListener {
-            /**
-             * Called by receive usb device inserted broadcast
-             *
-             * @param device usb device info,see [UsbDevice]
-             */
             override fun onAttach(device: UsbDevice?) {
                 if (Utils.debugCamera) {
                     Logger.i(TAG, "attach device = ${device?.toString()}")
@@ -408,11 +437,6 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                 requestCameraPermission(device)
             }
 
-            /**
-             * Called by receive usb device pulled out broadcast
-             *
-             * @param device usb device info,see [UsbDevice]
-             */
             override fun onDetach(device: UsbDevice?) {
                 if (Utils.debugCamera) {
                     Logger.i(TAG, "onDetach device = ${device?.deviceName}")
@@ -425,31 +449,36 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                 if (mCacheDeviceList.contains(device)) {
                     mCacheDeviceList.remove(device)
                 }
-                // 重置正在打开的设备
                 val dev = mDevSettableFuture?.get()
                 if (dev?.deviceId == device?.deviceId) {
                     mRequestPermission.set(false)
                 }
             }
 
-            /**
-             * Called by granted permission
-             *
-             * @param device usb device info,see [UsbDevice]
-             */
             override fun onConnect(
                 device: UsbDevice?,
                 ctrlBlock: USBMonitor.UsbControlBlock?,
                 createNew: Boolean
             ) {
-                if (Utils.debugCamera) {
-                    Logger.i(TAG, "onConnect device = ${device?.deviceName}")
-                }
                 if (!isUsbCamera(device) && !isFilterDevice(getContext(), device) && !mCacheDeviceList.contains(device)) {
                     return
                 }
+
                 mDevSettableFuture = SettableFuture()
                 mCtrlBlockSettableFuture = SettableFuture()
+                mDevSettableFuture?.set(device)
+                mCtrlBlockSettableFuture?.set(ctrlBlock)
+                mConnectSettableFuture.set(true)
+
+                // FIX: Selalu startPreview ulang saat device connect
+                // stopPreview dulu kalau sedang preview tanpa device (device=null)
+                if (mIsPreviewing.get()) {
+                    Logger.w(TAG, "onConnect: stop preview lama lalu restart dengan device baru")
+                    stopPreview()
+                    // Delay singkat biarkan stopPreview selesai
+                    Thread.sleep(200)
+                }
+
                 getRequest()?.apply {
                     if (getSurfaceTexture() != null) {
                         startPreview(this, getSurfaceTexture())
@@ -457,16 +486,8 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                         startPreview(this, getSurfaceHolder())
                     }
                 }
-                mDevSettableFuture?.set(device)
-                mCtrlBlockSettableFuture?.set(ctrlBlock)
-                mConnectSettableFuture.set(true)
             }
 
-            /**
-             * Called by dis unauthorized permission
-             *
-             * @param device usb device info,see [UsbDevice]
-             */
             override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
                 if (Utils.debugCamera) {
                     Logger.i(TAG, "onDisconnect device = ${device?.deviceName}")
@@ -483,11 +504,6 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                 mConnectSettableFuture.set(false)
             }
 
-            /**
-             * Called by dis unauthorized permission  or request permission exception
-             *
-             * @param device usb device info,see [UsbDevice]
-             */
             override fun onCancel(device: UsbDevice?) {
                 if (Utils.debugCamera) {
                     Logger.i(TAG, "onCancel device = ${device?.deviceName}")
@@ -521,22 +537,10 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
         }
     }
 
-    /**
-     * set device connect status call back
-     *
-     * @param cb see [IDeviceConnectCallBack]]
-     */
     fun setDeviceConnectStatusListener(cb: IDeviceConnectCallBack) {
         this.mDevConnectCallBack = cb
     }
 
-    /**
-     * Get usb device list
-     *
-     * @param resId device filter regular, like [R.xml.default_device_filter]
-     *         null means all usb devices, more than uvc devices
-     * @return device list
-     */
     fun getUsbDeviceList(resId: Int? = null): MutableList<UsbDevice>? {
         return mUsbMonitor?.deviceList?.let { usbDevList ->
             val list = arrayListOf<UsbDevice>()
@@ -562,11 +566,6 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
         }
     }
 
-    /**
-     * Get current device in 1 seconds
-     *
-     * @return current opened [UsbDevice]
-     */
     fun getCurrentDevice(): UsbDevice? {
         return try {
             val isConnected = mConnectSettableFuture.get(3, TimeUnit.SECONDS)
@@ -579,180 +578,37 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
         }
     }
 
-    /**
-     * Get current usb control block
-     *
-     * @return USBMonitor.UsbControlBlock
-     */
-    fun getUsbControlBlock(): USBMonitor.UsbControlBlock? {
-        return try {
-            val isConnected = mConnectSettableFuture.get(3, TimeUnit.SECONDS)
-            if (isConnected != true) {
-                return null
-            }
-            mCtrlBlockSettableFuture?.get(1, TimeUnit.SECONDS)
-        } catch (e: Exception) {
-            Logger.w(TAG, "get current usb control block times out")
-            null
-        }
-    }
-
-    /**
-     * Is mic supported
-     *
-     * @return true camera support mic
-     */
-    fun isMicSupported() = CameraUtils.isCameraContainsMic(getCurrentDevice())
-
-    /**
-     * Send camera command
-     *
-     * @param command hex value
-     * @return control result
-     */
     fun sendCameraCommand(command: Int): Int? {
         return mUVCCamera?.sendCommand(command).apply {
             Logger.i(TAG, "send command ret = $this")
         }
     }
 
-    /**
-     * Set auto focus
-     *
-     * @param enable true enable auto focus
-     */
-    fun setAutoFocus(enable: Boolean) {
-        mUVCCamera?.autoFocus = enable
-    }
-
-    /**
-     * Set auto white balance
-     *
-     * @param autoWhiteBalance true enable auto white balance
-     */
-    fun setAutoWhiteBalance(autoWhiteBalance: Boolean) {
-        mUVCCamera?.autoWhiteBlance = autoWhiteBalance
-    }
-
-    /**
-     * Set zoom
-     *
-     * @param zoom zoom value, 0 means reset
-     */
-    fun setZoom(zoom: Int) {
-        mUVCCamera?.zoom = zoom
-    }
-
-    /**
-     * Get zoom
-     */
+    fun setAutoFocus(enable: Boolean) { mUVCCamera?.autoFocus = enable }
+    fun setAutoWhiteBalance(autoWhiteBalance: Boolean) { mUVCCamera?.autoWhiteBlance = autoWhiteBalance }
+    fun setZoom(zoom: Int) { mUVCCamera?.zoom = zoom }
     fun getZoom() = mUVCCamera?.zoom
-
-    /**
-     * Set gain
-     *
-     * @param gain gain value, 0 means reset
-     */
-    fun setGain(gain: Int) {
-        mUVCCamera?.gain = gain
-    }
-
-    /**
-     * Get gain
-     */
+    fun setGain(gain: Int) { mUVCCamera?.gain = gain }
     fun getGain() = mUVCCamera?.gain
-
-    /**
-     * Set gamma
-     *
-     * @param gamma gamma value, 0 means reset
-     */
-    fun setGamma(gamma: Int) {
-        mUVCCamera?.gamma = gamma
-    }
-
-    /**
-     * Get gamma
-     */
+    fun setGamma(gamma: Int) { mUVCCamera?.gamma = gamma }
     fun getGamma() = mUVCCamera?.gamma
-
-    /**
-     * Set brightness
-     *
-     * @param brightness brightness value, 0 means reset
-     */
-    fun setBrightness(brightness: Int) {
-        mUVCCamera?.brightness = brightness
-    }
-
-    /**
-     * Get brightness
-     */
+    fun setBrightness(brightness: Int) { mUVCCamera?.brightness = brightness }
     fun getBrightness() = mUVCCamera?.brightness
-
-    /**
-     * Set contrast
-     *
-     * @param contrast contrast value, 0 means reset
-     */
-    fun setContrast(contrast: Int) {
-        mUVCCamera?.contrast = contrast
-    }
-
-    /**
-     * Get contrast
-     */
+    fun setContrast(contrast: Int) { mUVCCamera?.contrast = contrast }
     fun getContrast() = mUVCCamera?.contrast
-
-    /**
-     * Set sharpness
-     *
-     * @param sharpness sharpness value, 0 means reset
-     */
-    fun setSharpness(sharpness: Int) {
-        mUVCCamera?.sharpness = sharpness
-    }
-
-    /**
-     * Get sharpness
-     */
+    fun setSharpness(sharpness: Int) { mUVCCamera?.sharpness = sharpness }
     fun getSharpness() = mUVCCamera?.sharpness
-
-    /**
-     * Set saturation
-     *
-     * @param saturation saturation value, 0 means reset
-     */
-    fun setSaturation(saturation: Int) {
-        mUVCCamera?.saturation = saturation
-    }
-
-    /**
-     * Get saturation
-     */
+    fun setSaturation(saturation: Int) { mUVCCamera?.saturation = saturation }
     fun getSaturation() = mUVCCamera?.saturation
-
-    /**
-     * Set hue
-     *
-     * @param hue hue value, 0 means reset
-     */
-    fun setHue(hue: Int) {
-        mUVCCamera?.hue = hue
-    }
-
-    /**
-     * Get hue
-     */
+    fun setHue(hue: Int) { mUVCCamera?.hue = hue }
     fun getHue() = mUVCCamera?.hue
 
     private fun getUsbDeviceListInternal(): MutableList<UsbDevice>? {
         return mUsbMonitor?.getDeviceList(arrayListOf<DeviceFilter>())?.let { devList ->
             mCacheDeviceList.clear()
-            val devInfoList = ArrayList<String>();
+            val devInfoList = ArrayList<String>()
             devList.forEach {
                 devInfoList.add(it.deviceName)
-                // check is camera or need device
                 if (isUsbCamera(it) || isFilterDevice(getContext(), it)) {
                     mCacheDeviceList.add(it)
                 }
@@ -779,15 +635,19 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
     }
 
     private val frameCallBack = IFrameCallback { frame ->
+        android.util.Log.e("FRAME_DEBUG", "🔥 FRAME! size=${frame?.capacity()}")
         mPreviewDataCbList.forEach { cb ->
             frame?.apply {
-                frame.position(0)
+                position(0)
                 val data = ByteArray(capacity())
                 get(data)
-                cb.onPreviewData(data, getRequest()!!.previewWidth, getRequest()!!.previewHeight,IPreviewDataCallBack.DataFormat.NV21)
-                if (mNV21DataQueue.size >= MAX_NV21_DATA) {
-                    mNV21DataQueue.removeLast()
-                }
+                cb.onPreviewData(
+                    data,
+                    getRequest()!!.previewWidth,
+                    getRequest()!!.previewHeight,
+                    IPreviewDataCallBack.DataFormat.YUYV  // ganti ke MJPEG
+                )
+                if (mNV21DataQueue.size >= MAX_NV21_DATA) mNV21DataQueue.removeLast()
                 mNV21DataQueue.offerFirst(data)
             }
         }

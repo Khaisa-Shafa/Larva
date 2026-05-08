@@ -46,7 +46,7 @@ class FavoriteViewModel @Inject constructor(
     private fun observeFavoriteNewsFromFirestore() {
         val userId = auth.currentUser?.uid ?: return
 
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -92,7 +92,7 @@ class FavoriteViewModel @Inject constructor(
         val userId = auth.currentUser?.uid ?: return
         _favoriteNews.value = Resource.Loading()
 
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites")
             .get(Source.SERVER)
             .addOnSuccessListener { result ->
@@ -139,7 +139,7 @@ class FavoriteViewModel @Inject constructor(
             "author" to news.author,
             "contentImageUrls" to news.contentImageUrls
         )
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(news.id!!)
             .set(favoriteData)
             .addOnSuccessListener {
@@ -166,7 +166,7 @@ class FavoriteViewModel @Inject constructor(
     /** Hapus favorite dari Firestore dan Room */
     fun removeFavorite(newsId: String) {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(newsId)
             .delete()
             .addOnSuccessListener {

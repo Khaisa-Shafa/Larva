@@ -337,21 +337,19 @@ class PageDetectionViewModel @Inject constructor(
 
     fun loadTrainingMetrics(context: Context): JSONObject {
         return try {
-            val jsonString = context.assets.open("training_metrics.json").bufferedReader().use { it.readText() }
+            val jsonString = context.assets.open("baru/training_metrics.json")
+                .bufferedReader().use { it.readText() }
             val jsonArray = JSONArray(jsonString)
-            if (jsonArray.length() > 0) {
-                jsonArray.getJSONObject(0)
-            } else {
-                JSONObject()
-            }
+            if (jsonArray.length() > 0) jsonArray.getJSONObject(0)
+            else JSONObject()
         } catch (e: Exception) {
-            Log.e("PredictionViewModel", "Error loading training metrics", e)
+            Log.e("PageDetectionViewModel", "Error loading training metrics", e)
             JSONObject()
         }
     }
 
     fun loadConfusionMatrix(context: Context): Pair<List<List<Float>>, List<String>> {
-        val jsonString = context.assets.open("confusion_matrix_YOLOv8.json").bufferedReader().use { it.readText() }
+        val jsonString = context.assets.open("baru/confusion_matrix_YOLOv8.json").bufferedReader().use { it.readText() }
         val jsonObject = JSONObject(jsonString)
         val matrix = jsonObject.getJSONArray("confusion_matrix")
         val classes = jsonObject.getJSONArray("classes")
@@ -372,6 +370,17 @@ class PageDetectionViewModel @Inject constructor(
         }
 
         return Pair(confusionMatrix, classList)
+    }
+
+    fun loadModelResults(context: Context): JSONObject {
+        return try {
+            val jsonString = context.assets.open("baru/model_results.json")
+                .bufferedReader().use { it.readText() }
+            JSONObject(jsonString)
+        } catch (e: Exception) {
+            Log.e("PageDetectionViewModel", "Error loading model results", e)
+            JSONObject()
+        }
     }
 
     fun getTopPredictionClass(): String? {

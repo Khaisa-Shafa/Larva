@@ -48,7 +48,7 @@ class AllCategoryViewModel  @Inject constructor(
 
     fun fetchFavoriteNews() {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -79,7 +79,7 @@ class AllCategoryViewModel  @Inject constructor(
                     "contentImageUrls" to news.contentImageUrls,
                     "sourceLogoUrls" to news.sourceLogoUrls
                 )
-                firestore.collection("users").document(userId)
+                firestore.collection("user").document(userId)
                     .collection("Favorites").document(news.id!!)
                     .set(favoriteData)
                     .await()
@@ -92,7 +92,7 @@ class AllCategoryViewModel  @Inject constructor(
 
     fun removeFavorite(newsId: String) {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(newsId).delete()
             .addOnSuccessListener {
                 fetchFavoriteNews()
@@ -102,13 +102,13 @@ class AllCategoryViewModel  @Inject constructor(
             }
     }
 
-    private fun fetchSliderNews() {
+    fun fetchSliderNews() {
         viewModelScope.launch {
             try {
                 _sliderNews.emit(Resource.Loading())
 
                 val categories = listOf("Aedes", "Culex", "Anopheles")
-                val result = firestore.collection("news")
+                val result = firestore.collection("News")
                     .whereIn("category", categories)
                     .get()
                     .await()
@@ -117,11 +117,17 @@ class AllCategoryViewModel  @Inject constructor(
                 Log.d("FirestoreDebug", "Slider news count: ${sliderNewsList.size}")
                 _sliderNews.emit(Resource.Success(sliderNewsList))
 
+                result.documents.forEach { doc ->
+                    Log.d("FirestoreDebug", "Slider doc: ${doc.id} → ${doc.data}")
+                }
+
             } catch (e: Exception) {
                 _sliderNews.emit(Resource.Error(e.message.toString()))
                 Log.e("FirestoreError", "Failed to fetch slider news: ${e.message}")
             }
+
         }
+
     }
 
     fun fetchAllNews() {

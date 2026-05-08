@@ -9,7 +9,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:minHeight="90dp">
 
         <ImageView
             android:id="@+id/imageNewsRvItem"
@@ -21,22 +22,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Baris 1: Author · Category + Favorite -->
         <TextView
             android:id="@+id/tvAuthor"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="40dp"
+            android:layout_marginTop="10dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/custom_color_text_primary"
             android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tvBullet"
             app:layout_constraintStart_toEndOf="@+id/imageNewsRvItem"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintHorizontal_bias="0" />
 
-        <!-- Bullet + Category dalam satu baris -->
         <TextView
             android:id="@+id/tvBullet"
             android:layout_width="wrap_content"
@@ -44,35 +46,21 @@
             android:text=" · "
             android:textColor="@color/custom_color_text_primary"
             android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvAuthor"
             app:layout_constraintStart_toEndOf="@+id/tvAuthor"
-            app:layout_constraintTop_toTopOf="@+id/tvAuthor" />
+            app:layout_constraintEnd_toStartOf="@+id/tvCategory" />
 
         <TextView
             android:id="@+id/tvCategory"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textSize="12sp"
             android:textColor="@color/custom_color_text_primary"
+            app:layout_constraintBaseline_toBaselineOf="@+id/tvAuthor"
             app:layout_constraintStart_toEndOf="@+id/tvBullet"
-            app:layout_constraintTop_toTopOf="@+id/tvBullet"
             app:layout_constraintEnd_toStartOf="@+id/ivFavorite" />
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="@color/custom_color_text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tvAuthor"
-            app:layout_constraintTop_toBottomOf="@+id/tvAuthor" />
 
         <ImageView
             android:id="@+id/ivFavorite"
@@ -83,6 +71,25 @@
             android:src="@drawable/ic_favorite"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Baris 2: Judul -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="10dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/custom_color_text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageNewsRvItem"
+            app:layout_constraintTop_toBottomOf="@+id/tvAuthor" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

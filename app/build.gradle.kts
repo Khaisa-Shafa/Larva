@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
 android {
@@ -68,6 +69,7 @@ dependencies {
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.metadata)
     implementation(libs.tensorflow.lite.gpu)
+    implementation(project(":libuvc"))
     kapt(libs.hilt.android.compiler)
 
 //    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
@@ -105,6 +107,7 @@ dependencies {
     //gms
     implementation(libs.play.services.base)
     implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
 
     //retrofit
     implementation(libs.retrofit)
@@ -127,6 +130,7 @@ dependencies {
     //camera
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+
 }
 
 // Allow references to generated code

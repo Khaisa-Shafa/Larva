@@ -2,10 +2,14 @@ package com.dicoding.skripsiapp.viewmodel
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.widget.ImageView
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.bumptech.glide.Glide
+import com.dicoding.skripsiapp.R
 import com.dicoding.skripsiapp.SkripsiApp
 import com.dicoding.skripsiapp.data.User
 import com.dicoding.skripsiapp.util.RegisterValidation
@@ -103,21 +107,48 @@ class EditProfileViewModel @Inject constructor(
                     getApplication<SkripsiApp>().contentResolver,
                     imageUri
                 )
+
+                // Resize dulu biar tidak terlalu besar (max 200x200)
+                val resized = Bitmap.createScaledBitmap(imageBitmap, 200, 200, true)
+
                 val byteArrayOutputStream = ByteArrayOutputStream()
-                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 96, byteArrayOutputStream)
+                resized.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream)
                 val imageByteArray = byteArrayOutputStream.toByteArray()
-                val imageDirectory =
-                    storage.child("profileImages/${auth.uid}/${UUID.randomUUID()}")
-                val result = imageDirectory.putBytes(imageByteArray).await()
-                val imageUrl = result.storage.downloadUrl.await().toString()
-                saveUserInformation(user.copy(imagePath = imageUrl), false)
+
+                // Encode ke Base64
+                val base64Image = android.util.Base64.encodeToString(
+                    imageByteArray,
+                    android.util.Base64.DEFAULT
+                )
+                val imageDataUrl = "data:image/jpeg;base64,$base64Image"
+
+                saveUserInformation(user.copy(imagePath = imageDataUrl), false)
+
             } catch (e: Exception) {
-                viewModelScope.launch {
-                    _user.emit(Resource.Error(e.message.toString()))
-                }
+                _user.emit(Resource.Error(e.message.toString()))
             }
         }
     }
+
+    // Di EditProfileFragment dan ProfileFragment
+    fun loadProfileImage(imageView: ImageView, imagePath: String?) {
+        if (imagePath.isNullOrEmpty()) {
+            imageView.setImageResource(R.drawable.image_profile)
+            return
+        }
+
+        if (imagePath.startsWith("data:image")) {
+            // Base64
+            val base64 = imagePath.substringAfter("base64,")
+            val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            imageView.setImageBitmap(bitmap)
+        } else {
+            // URL biasa (lama)
+            Glide.with(imageView.context).load(imagePath).into(imageView)
+        }
+    }
+
 
     private fun saveUserInformation(user: User, shouldRetrievedOldImage: Boolean) {
         firestore.runTransaction { transaction ->

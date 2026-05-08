@@ -58,7 +58,7 @@ abstract class ICameraStrategy(context: Context) : Handler.Callback {
     private var mSurfaceHolder: SurfaceHolder? = null
     private var mCameraRequest: CameraRequest? = null
     private var mContext: Context? = null
-    protected var mPreviewDataCbList = CopyOnWriteArrayList<IPreviewDataCallBack>()
+    var mPreviewDataCbList = CopyOnWriteArrayList<IPreviewDataCallBack>()
     protected var mCaptureDataCb: ICaptureCallBack? = null
     protected val mMainHandler: Handler = Handler(Looper.getMainLooper())
     protected val mSaveImageExecutor: ExecutorService = Executors.newSingleThreadExecutor()

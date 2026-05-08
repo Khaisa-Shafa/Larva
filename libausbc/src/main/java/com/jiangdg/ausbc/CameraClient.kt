@@ -735,4 +735,3 @@ class CameraClient internal constructor(builder: Builder) : IPreviewDataCallBack
         fun build() = CameraClient(this)
     }
 }
-

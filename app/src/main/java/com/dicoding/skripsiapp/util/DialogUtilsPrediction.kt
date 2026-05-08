@@ -18,43 +18,28 @@ object DialogUtilsPrediction {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_confusion_matrix, null)
         val tableLayout = dialogView.findViewById<TableLayout>(R.id.tableLayout)
 
-        // Data to be displayed in the table
-        val data = mapOf(
-            "Epoch" to metrics.getInt("epoch").toString(),
-            "Train Box Loss" to metrics.getDouble("train/box_loss").toString(),
-            "Train Cls Loss" to metrics.getDouble("train/cls_loss").toString(),
-            "Train Dfl Loss" to metrics.getDouble("train/dfl_loss").toString(),
-            "Validation Box Loss" to metrics.getDouble("val/box_loss").toString(),
-            "Validation Cls Loss" to metrics.getDouble("val/cls_loss").toString(),
-            "Validation Dfl Loss" to metrics.getDouble("val/dfl_loss").toString(),
-            "Precision" to metrics.getDouble("metrics/precision(B)").toString(),
-            "Recall" to metrics.getDouble("metrics/recall(B)").toString(),
-            "mAP50" to metrics.getDouble("metrics/mAP50(B)").toString(),
-            "mAP50-95" to metrics.getDouble("metrics/mAP50-95(B)").toString()
+        // ⚠️ Fix key dari (M) ke (B)
+        val data = linkedMapOf(
+            "Epoch"                to metrics.optInt("epoch").toString(),
+            "Train Box Loss"       to metrics.optDouble("train/box_loss").format(),
+            "Train Cls Loss"       to metrics.optDouble("train/cls_loss").format(),
+            "Train Dfl Loss"       to metrics.optDouble("train/dfl_loss").format(),
+            "Val Box Loss"         to metrics.optDouble("val/box_loss").format(),
+            "Val Cls Loss"         to metrics.optDouble("val/cls_loss").format(),
+            "Val Dfl Loss"         to metrics.optDouble("val/dfl_loss").format(),
+            "Precision"            to metrics.optDouble("metrics/precision(B)").format(),
+            "Recall"               to metrics.optDouble("metrics/recall(B)").format(),
+            "mAP50"                to metrics.optDouble("metrics/mAP50(B)").format(),
+            "mAP50-95"             to metrics.optDouble("metrics/mAP50-95(B)").format()
         )
 
-        // Populate the table with data and add borders
         for ((key, value) in data) {
             val row = TableRow(context)
-            row.layoutParams = TableRow.LayoutParams(
-                TableRow.LayoutParams.MATCH_PARENT,
-                TableRow.LayoutParams.WRAP_CONTENT
-            )
-
-            // Key cell
-            val keyView = createTableCell(context, key)
-            // Value cell
-            val valueView = createTableCell(context, value)
-
-            // Add the cells to the row
-            row.addView(keyView)
-            row.addView(valueView)
-
-            // Add the row to the table
+            row.addView(createTableCell(context, key))
+            row.addView(createTableCell(context, value))
             tableLayout.addView(row)
         }
 
-        // Show dialog
         AlertDialog.Builder(context)
             .setTitle("Training Metrics")
             .setView(dialogView)
@@ -111,6 +96,9 @@ object DialogUtilsPrediction {
             .setPositiveButton("Close") { dialog, _ -> dialog.dismiss() }
             .show()
     }
+
+    private fun Double.format(): String = if (this.isNaN()) "-" else "%.5f".format(this)
+    private fun Double.formatPercent(): String = if (this.isNaN()) "-" else "${"%.2f".format(this * 100)}%"
 
     private fun createTableCell(context: Context, text: String): TextView {
         return TextView(context).apply {

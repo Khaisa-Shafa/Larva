@@ -14,28 +14,28 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AnotherCategoryViewModel @Inject constructor(
+class AnophelesCategoryViewModel @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
 ): ViewModel() {
-    private val _anotherNews = MutableStateFlow<Resource<List<News>>>(Resource.Unspecified())
-    val anotherNews: StateFlow<Resource<List<News>>> = _anotherNews
+    private val _anophelesNews = MutableStateFlow<Resource<List<News>>>(Resource.Unspecified())
+    val anophelesNews: StateFlow<Resource<List<News>>> = _anophelesNews
 
-    private val anotherPagingInfo = AnotherPagingInfo()
+    private val anophelesPagingInfo = AnophelesPagingInfo()
 
     // Daftar berita favorit
     private val _favoriteNews = MutableStateFlow<List<String>>(emptyList())
     val favoriteNews: StateFlow<List<String>> = _favoriteNews
 
     init {
-        fetchAnotherNews()
+        fetchAnophelesNews()
         fetchFavoriteNews()
 
     }
 
     private fun fetchFavoriteNews() {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -66,7 +66,7 @@ class AnotherCategoryViewModel @Inject constructor(
             "sourceLogoUrls" to news.sourceLogoUrls
         )
 
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(news.id!!)
             .set(favoriteData)
             .addOnSuccessListener {
@@ -79,7 +79,7 @@ class AnotherCategoryViewModel @Inject constructor(
 
     fun removeFavorite(newsId: String) {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(newsId).delete()
             .addOnSuccessListener {
                 fetchFavoriteNews()
@@ -89,28 +89,28 @@ class AnotherCategoryViewModel @Inject constructor(
             }
     }
 
-    fun fetchAnotherNews() {
-        if (!anotherPagingInfo.isPagingEnd) {
+    fun fetchAnophelesNews() {
+        if (!anophelesPagingInfo.isPagingEnd) {
             viewModelScope.launch {
-                _anotherNews.emit(Resource.Loading())
+                _anophelesNews.emit(Resource.Loading())
 
                 firestore
-                    .collection("news")
+                    .collection("News")
                     .whereEqualTo("category", "Anopheles")
-                    .limit(anotherPagingInfo.anotherNewsPage * 10)
+                    .limit(anophelesPagingInfo.anophelesNewsPage * 10)
                     .get()
                     .addOnSuccessListener { result ->
                         val allNewsList = result.toObjects(News::class.java)
-                        anotherPagingInfo.isPagingEnd = allNewsList == anotherPagingInfo.oldAnotherNews
-                        anotherPagingInfo.oldAnotherNews = allNewsList
+                        anophelesPagingInfo.isPagingEnd = allNewsList == anophelesPagingInfo.oldAnophelesNews
+                        anophelesPagingInfo.oldAnophelesNews = allNewsList
                         viewModelScope.launch {
-                            _anotherNews.emit(Resource.Success(allNewsList))
+                            _anophelesNews.emit(Resource.Success(allNewsList))
                         }
-                        anotherPagingInfo.anotherNewsPage++
+                        anophelesPagingInfo.anophelesNewsPage++
                     }
                     .addOnFailureListener {
                         viewModelScope.launch {
-                            _anotherNews.emit(Resource.Error(it.message.toString()))
+                            _anophelesNews.emit(Resource.Error(it.message.toString()))
                         }
                     }
             }
@@ -118,14 +118,14 @@ class AnotherCategoryViewModel @Inject constructor(
     }
 
     fun resetPaging() {
-        anotherPagingInfo.anotherNewsPage = 1        // Reset halaman ke 1
-        anotherPagingInfo.isPagingEnd = false      // Menandakan bahwa paging belum selesai
-        anotherPagingInfo.oldAnotherNews = emptyList() // Reset daftar berita lama
+        anophelesPagingInfo.anophelesNewsPage = 1        // Reset halaman ke 1
+        anophelesPagingInfo.isPagingEnd = false      // Menandakan bahwa paging belum selesai
+        anophelesPagingInfo.oldAnophelesNews = emptyList() // Reset daftar berita lama
     }
 }
 
-internal data class AnotherPagingInfo(
-    var anotherNewsPage: Long = 1,
-    var oldAnotherNews: List<News> = emptyList(),
+internal data class AnophelesPagingInfo(
+    var anophelesNewsPage: Long = 1,
+    var oldAnophelesNews: List<News> = emptyList(),
     var isPagingEnd: Boolean = false
 )

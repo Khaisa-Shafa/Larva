@@ -2,6 +2,8 @@ package com.dicoding.skripsiapp.ml
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
+import com.dicoding.skripsiapp.data.YoloSegResult
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -16,7 +18,6 @@ class YoloSegHelper(
     private val interpreter: Interpreter
 
     private val inputSize = 640
-    private val numClasses = 3
     private val numElements = 39
     private val numAnchors = 8400
 
@@ -36,7 +37,7 @@ class YoloSegHelper(
         )
     }
 
-    fun detect(bitmap: Bitmap): Array<FloatArray> {
+    fun detect(bitmap: Bitmap): YoloSegResult {
 
         val resized = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
 
@@ -54,15 +55,24 @@ class YoloSegHelper(
         }
 
         val output0 = Array(1) { Array(numElements) { FloatArray(numAnchors) } }
-//        val output1 = Array(1) { Array(160) { Array(160) { FloatArray(32) } } }
+        val output1 = Array(1) { Array(160) { Array(160) { FloatArray(32) } } }
 
         val outputs = mapOf(
-            0 to output0
-//            1 to output1
+            0 to output0,
+            1 to output1
         )
 
         interpreter.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
 
-        return output0[0]
+        Log.d("YOLO", "Sample pixel: ${pixels[0]}")
+        
+        return YoloSegResult(
+            detections = output0[0],
+            proto = output1[0]
+        )
+
+
     }
+
+
 }

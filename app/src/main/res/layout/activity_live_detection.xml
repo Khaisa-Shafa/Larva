@@ -5,23 +5,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- STREAM DARI MIKROSKOP -->
-    <WebView
-        android:id="@+id/webView"
+    <com.jiangdg.ausbc.widget.AspectRatioTextureView
+        android:id="@+id/textureView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!-- OVERLAY DETEKSI -->
     <com.surendramaran.yolov8tflite.OverlayView
         android:id="@+id/overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!-- INFERENCE TIME -->
+    <TextView
+        android:id="@+id/cameraStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="#80000000"
+        android:padding="8dp"
+        android:text="Menunggu USB..."
+        android:textColor="@android:color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/inferenceTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="0 ms"
         android:textColor="@android:color/white"
         android:background="#80000000"

@@ -562,7 +562,11 @@ class Camera2Strategy(ctx: Context) : ICameraStrategy(ctx) {
                 }
 
                 mPreviewDataCbList.forEach { cb ->
-                    cb.onPreviewData(mYUVData, request.previewWidth, request.previewHeight, IPreviewDataCallBack.DataFormat.NV21)
+                    cb.onPreviewData(
+                        mYUVData,
+                        request.previewWidth,
+                        request.previewHeight,
+                        IPreviewDataCallBack.DataFormat.NV21)
                 }
                 it.close()
             } catch (e: IndexOutOfBoundsException) {

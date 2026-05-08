@@ -49,8 +49,10 @@ class CulexCategoryFragment : Fragment() {
 
         setUpCulexNewsRv()
 
+        binding.tvHeader.text = "Culex News"
+
         culexAdapter.onClick = {
-            val b = Bundle().apply { putParcelable("news", it) }
+            val b = Bundle().apply { putParcelable("News", it) }
             findNavController().navigate(R.id.action_homeFragment_to_newsDetailFragment, b)
         }
 

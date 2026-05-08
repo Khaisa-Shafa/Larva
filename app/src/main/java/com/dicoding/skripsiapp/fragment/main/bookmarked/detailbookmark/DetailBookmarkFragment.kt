@@ -42,8 +42,6 @@ import com.dicoding.skripsiapp.util.hideBottomNavigationView
 import com.dicoding.skripsiapp.viewmodel.DetailBookmarkViewModel
 import com.dicoding.skripsiapp.viewmodel.PageClassificationViewModel
 import com.dicoding.skripsiapp.viewmodel.PageDetectionViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

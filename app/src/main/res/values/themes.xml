@@ -17,4 +17,9 @@
         <item name="boxStrokeColor">@color/custom_color_black</item>
     </style>
 
+    <style name="ShapeAppearanceOverlay.Carousel" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
 </resources>

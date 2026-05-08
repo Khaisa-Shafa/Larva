@@ -69,9 +69,9 @@ class PreviewImageView: AppCompatImageView {
     constructor(context: Context?) : this(context, null)
     constructor(context: Context?, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
-            context!!,
-            attrs,
-            defStyleAttr
+        context!!,
+        attrs,
+        defStyleAttr
     ) {
         init()
     }
@@ -301,7 +301,7 @@ class PreviewImageView: AppCompatImageView {
         mProgressDstPath?.let {
             it.reset()
             mProgressPathMeasure.getSegment(0f,
-                    mProgressPathMeasure.length * progress, it, true)
+                mProgressPathMeasure.length * progress, it, true)
             invalidate()
         }
     }

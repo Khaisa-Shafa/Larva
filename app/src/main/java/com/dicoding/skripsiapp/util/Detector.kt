@@ -38,6 +38,7 @@ class Detector(
     private var numChannel = 0
     private var numElements = 0
 
+
     fun setListener(listener: DetectorListener) {
         this.detectorListener = listener
     }
@@ -234,7 +235,38 @@ class Detector(
         return intersectionArea / (box1Area + box2Area - intersectionArea)
     }
 
+    fun detectSync(frame: Bitmap): List<BoundingBox> {
+        interpreter ?: return emptyList()
+
+        val resizedBitmap = Bitmap.createScaledBitmap(frame, tensorWidth, tensorHeight, false)
+        val inputBuffer = ByteBuffer.allocateDirect(1 * tensorWidth * tensorHeight * 3 * 4)
+        inputBuffer.order(ByteOrder.nativeOrder())
+
+        val pixels = IntArray(tensorWidth * tensorHeight)
+        resizedBitmap.getPixels(pixels, 0, tensorWidth, 0, 0, tensorWidth, tensorHeight)
+        for (pixel in pixels) {
+            inputBuffer.putFloat(((pixel shr 16) and 0xFF) / 255f)
+            inputBuffer.putFloat(((pixel shr 8) and 0xFF) / 255f)
+            inputBuffer.putFloat((pixel and 0xFF) / 255f)
+        }
+
+        val output0 = Array(1) { Array(numChannel) { FloatArray(numElements) } }
+        val outputs = mapOf(0 to output0)
+        interpreter?.runForMultipleInputsOutputs(arrayOf(inputBuffer), outputs)
+
+        val flatOutput = FloatArray(numChannel * numElements)
+        var index = 0
+        for (i in 0 until numChannel) {
+            for (j in 0 until numElements) {
+                flatOutput[index++] = output0[0][i][j]
+            }
+        }
+
+        return bestBox(flatOutput) ?: emptyList()
+    }
+
     interface DetectorListener {
+
         fun onEmptyDetect()
         fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long)
     }

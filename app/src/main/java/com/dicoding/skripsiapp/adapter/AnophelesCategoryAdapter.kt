@@ -10,7 +10,7 @@ import com.dicoding.skripsiapp.R
 import com.dicoding.skripsiapp.data.News
 import com.dicoding.skripsiapp.databinding.NewsItemBinding
 
-class AnotherCategoryAdapter: RecyclerView.Adapter<AnotherCategoryAdapter.AnotherCategoryViewHolder>() {
+class AnophelesCategoryAdapter: RecyclerView.Adapter<AnophelesCategoryAdapter.AnotherCategoryViewHolder>() {
 
     private val favoriteIds = mutableSetOf<String>()
 

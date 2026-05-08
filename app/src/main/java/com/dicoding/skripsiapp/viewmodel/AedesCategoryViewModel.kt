@@ -34,7 +34,7 @@ class AedesCategoryViewModel@Inject constructor(
 
     private fun fetchFavoriteNews() {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -65,7 +65,7 @@ class AedesCategoryViewModel@Inject constructor(
             "sourceLogoUrls" to news.sourceLogoUrls
         )
 
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(news.id!!)
             .set(favoriteData)
             .addOnSuccessListener {
@@ -78,7 +78,7 @@ class AedesCategoryViewModel@Inject constructor(
 
     fun removeFavorite(newsId: String) {
         val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .collection("Favorites").document(newsId).delete()
             .addOnSuccessListener {
                 fetchFavoriteNews()

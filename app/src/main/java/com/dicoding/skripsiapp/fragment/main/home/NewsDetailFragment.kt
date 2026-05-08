@@ -38,8 +38,6 @@ class NewsDetailFragment : Fragment() {
     private var _binding: FragmentNewsDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val args by navArgs<NewsDetailFragmentArgs>()
-
     private val viewModel by viewModels<AllCategoryViewModel>()
 
     private var currentNews: News? = null
@@ -84,10 +82,10 @@ class NewsDetailFragment : Fragment() {
         }
 
         // Get news object from arguments
-        currentNews = arguments?.getParcelable("news")
+        currentNews = arguments?.getParcelable("News")
         if (currentNews == null) {
             Toast.makeText(requireContext(), "News data is missing", Toast.LENGTH_SHORT).show()
-            findNavController().navigateUp() // Kembali ke fragment sebelumnya
+            findNavController().navigateUp()
             return
         }
 
@@ -122,48 +120,43 @@ class NewsDetailFragment : Fragment() {
 
         // Pastikan toolbar terlihat di awal
         binding.appBarLayout.translationY = 0f
-        val news = args.news
+        val news = currentNews!!
 
         binding.apply {
-            ivBack.setOnClickListener {
-                findNavController().navigateUp()
-            }
+            ivBack.setOnClickListener { findNavController().navigateUp() }
             tvNewsSource.text = news.newsSource
             tvCategory.text = news.category
             tvTitle.text = news.title
             tvAuthor.text = news.author
-            ivLink.setOnClickListener{
+
+            ivLink.setOnClickListener {
                 val link = news.link
                 if (!link.isNullOrEmpty()) {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.data = Uri.parse(link)
                     startActivity(intent)
                 } else {
-                    // Opsional: Tampilkan pesan jika link kosong
                     Toast.makeText(requireContext(), "Link tidak tersedia", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            // Cek jika sourceLogoUrls tidak kosong
             if (!news.sourceLogoUrls.isNullOrEmpty()) {
                 Glide.with(this@NewsDetailFragment)
                     .load(news.sourceLogoUrls[0])
                     .error(R.drawable.ic_error)
                     .into(ivLogo)
             } else {
-                binding.ivLogo.setImageResource(R.drawable.ic_error) // Set default jika kosong
+                ivLogo.setImageResource(R.drawable.ic_error)
             }
 
-// Cek jika contentImageUrls tidak kosong
             if (!news.contentImageUrls.isNullOrEmpty()) {
                 Glide.with(this@NewsDetailFragment)
                     .load(news.contentImageUrls[0])
                     .error(R.drawable.ic_error)
                     .into(ivContent)
             } else {
-                binding.ivContent.setImageResource(R.drawable.ic_error) // Set default jika kosong
+                ivContent.setImageResource(R.drawable.ic_error)
             }
-
 
             tvDescription.text = HtmlCompat.fromHtml(
                 news.description.toString(),

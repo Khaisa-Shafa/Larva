@@ -11,5 +11,17 @@ data class BoundingBox(
     val h: Float,
     val cnf: Float,
     val cls: Int,
-    var clsName: String
+    var clsName: String,
+    val mask: Array<FloatArray>? = null // 🔥 TAMBAHAN
 )
+
+//data class BoundingBox(
+//    val x1: Float,
+//    val y1: Float,
+//    val x2: Float,
+//    val y2: Float,
+//    val cnf: Float,
+//    val cls: Int,
+//    val clsName: String,
+//    val mask: Array<FloatArray>? = null // 🔥 TAMBAHAN
+//)

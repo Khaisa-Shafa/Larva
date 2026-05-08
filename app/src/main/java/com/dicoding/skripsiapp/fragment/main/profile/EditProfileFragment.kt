@@ -3,6 +3,7 @@ package com.dicoding.skripsiapp.fragment.main.profile
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -11,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -248,6 +250,25 @@ class EditProfileFragment : Fragment() {
             type = "image/*"
         }
         imageActivityResultLauncher.launch(intent)
+    }
+
+    // Di EditProfileFragment dan ProfileFragment
+    fun loadProfileImage(imageView: ImageView, imagePath: String?) {
+        if (imagePath.isNullOrEmpty()) {
+            imageView.setImageResource(R.drawable.image_profile)
+            return
+        }
+
+        if (imagePath.startsWith("data:image")) {
+            // Base64
+            val base64 = imagePath.substringAfter("base64,")
+            val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            imageView.setImageBitmap(bitmap)
+        } else {
+            // URL biasa (lama)
+            Glide.with(imageView.context).load(imagePath).into(imageView)
+        }
     }
 
 

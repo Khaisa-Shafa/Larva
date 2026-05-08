@@ -187,7 +187,7 @@ class FavoriteFragment : Fragment() {
         }
 
         allNewsAdapter.onClick = { news ->
-            val bundle = Bundle().apply { putParcelable("news", news) }
+            val bundle = Bundle().apply { putParcelable("News", news) }
             findNavController().navigate(R.id.action_favoriteFragment_to_newsDetailFragment, bundle)
         }
     }

@@ -2,6 +2,7 @@ package com.dicoding.skripsiapp.activity
 
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -58,15 +59,7 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        val helper = YoloSegHelper(this)
 
-        val inputStream = assets.open("baru/test.jpg")
-        val bitmap = BitmapFactory.decodeStream(inputStream)
-
-        val result = helper.detect(bitmap)
-        
-
-        Log.d("YOLO", "Output size: ${result.size}")
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainHostFragment)) { view, insets ->
             val systemBarInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -160,13 +153,11 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        // Pilih Model 1: YOLOv8 + MobileNetV3
         layoutModel1.setOnClickListener {
             dialog.dismiss()
             showActionDialog(Constants.MODEL_YOLOV8_MOBILENETV3)
         }
 
-        // Pilih Model 2: YOLO11-Seg + MobileViT
         layoutModel2.setOnClickListener {
             dialog.dismiss()
             showActionDialog(Constants.MODEL_YOLO11_MOBILEVIT)

@@ -40,7 +40,7 @@ class AllCategoryFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentAllCategoryBinding.inflate(inflater, container, false)
         return binding.root
@@ -51,8 +51,10 @@ class AllCategoryFragment : Fragment() {
 
         setUpAllNewsRv()
 
+        binding.tvHeader.text = "Discover News"
+
         allNewsAdapter.onClick = {
-            val b = Bundle().apply { putParcelable("news", it) }
+            val b = Bundle().apply { putParcelable("News", it) }
             findNavController().navigate(R.id.action_homeFragment_to_newsDetailFragment, b)
         }
 

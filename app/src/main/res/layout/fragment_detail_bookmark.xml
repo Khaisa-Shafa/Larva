@@ -165,7 +165,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Output: "
+            android:text="Model: "
             android:textColor="@color/custom_color_black"
             android:textSize="21sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -179,7 +179,7 @@
             android:layout_marginTop="8dp"
             android:text="Result Here"
             android:textColor="@android:color/holo_red_dark"
-            android:textSize="21sp"
+            android:textSize="16sp"
             android:textAlignment="center"
             app:layout_constraintEnd_toEndOf="@+id/textView"
             app:layout_constraintStart_toStartOf="@+id/textView"
@@ -209,11 +209,11 @@
             android:visibility="gone" />
 
         <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/guideline2"
-            app:layout_constraintGuide_percent="0.5"
-            android:orientation="vertical"/>
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.49872774" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

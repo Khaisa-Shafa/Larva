@@ -38,7 +38,7 @@ class AedesCategoryFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentAedesCategoryBinding.inflate(inflater, container, false)
         return binding.root
@@ -49,8 +49,10 @@ class AedesCategoryFragment : Fragment() {
 
         setUpAedesNewsRv()
 
+        binding.tvHeader.text = "Aedes News"
+
         aedesAdapter.onClick = {
-            val b = Bundle().apply { putParcelable("news", it) }
+            val b = Bundle().apply { putParcelable("News", it) }
             findNavController().navigate(R.id.action_homeFragment_to_newsDetailFragment, b)
         }
 

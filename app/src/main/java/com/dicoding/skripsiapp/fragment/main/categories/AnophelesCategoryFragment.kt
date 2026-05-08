@@ -16,46 +16,46 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dicoding.skripsiapp.R
-import com.dicoding.skripsiapp.adapter.AnotherCategoryAdapter
-import com.dicoding.skripsiapp.adapter.CulexCategoryAdapter
-import com.dicoding.skripsiapp.databinding.FragmentAnotherCategoryBinding
+import com.dicoding.skripsiapp.adapter.AnophelesCategoryAdapter
+import com.dicoding.skripsiapp.databinding.FragmentAnophelesCategoryBinding
 import com.dicoding.skripsiapp.util.Resource
-import com.dicoding.skripsiapp.util.showBottomNavigationView
-import com.dicoding.skripsiapp.viewmodel.AnotherCategoryViewModel
+import com.dicoding.skripsiapp.viewmodel.AnophelesCategoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-private val tagAnotherFragment = "AnotherCategoryFragment"
+private val tagAnophelesFragment = "AnophelesCategoryFragment"
 @AndroidEntryPoint
-class AnotherCategoryFragment : Fragment() {
+class AnophelesCategoryFragment : Fragment() {
 
-    private var _binding: FragmentAnotherCategoryBinding? = null
+    private var _binding: FragmentAnophelesCategoryBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by viewModels<AnotherCategoryViewModel>()
-    private lateinit var anotherAdapter: AnotherCategoryAdapter
+    private val viewModel by viewModels<AnophelesCategoryViewModel>()
+    private lateinit var anophelesAdapter: AnophelesCategoryAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentAnotherCategoryBinding.inflate(inflater, container, false)
+        _binding = FragmentAnophelesCategoryBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpAnotherNewsRv()
+        setUpAnophelesNewsRv()
 
-        anotherAdapter.onClick = {
-            val b = Bundle().apply { putParcelable("news", it) }
+        binding.tvHeader.text = "Anopheles News"
+
+        anophelesAdapter.onClick = {
+            val b = Bundle().apply { putParcelable("News", it) }
             findNavController().navigate(R.id.action_homeFragment_to_newsDetailFragment, b)
         }
 
-        anotherAdapter.onFavoriteClick = { news ->
+        anophelesAdapter.onFavoriteClick = { news ->
             if (viewModel.favoriteNews.value.contains(news.id)) {
                 // Tampilkan dialog konfirmasi untuk menghapus dari favorit
                 val context = requireContext()
@@ -78,18 +78,18 @@ class AnotherCategoryFragment : Fragment() {
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 launch {
-                    viewModel.anotherNews.collectLatest {
+                    viewModel.anophelesNews.collectLatest {
                         when (it) {
                             is Resource.Loading -> {
                                 showLoading()
                             }
                             is Resource.Success -> {
-                                anotherAdapter.differ.submitList(it.data)
+                                anophelesAdapter.differ.submitList(it.data)
                                 hideLoading()
                             }
                             is Resource.Error -> {
                                 hideLoading()
-                                Log.e(tagAnotherFragment, it.message.toString())
+                                Log.e(tagAnophelesFragment, it.message.toString())
                                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                             }
                             else -> Unit
@@ -99,7 +99,7 @@ class AnotherCategoryFragment : Fragment() {
 
                 launch {
                     viewModel.favoriteNews.collectLatest { favorites ->
-                        anotherAdapter.updateFavorites(favorites)
+                        anophelesAdapter.updateFavorites(favorites)
                     }
                 }
             }
@@ -107,16 +107,16 @@ class AnotherCategoryFragment : Fragment() {
 
         binding.nestedScrollViewAllCategory.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, scrollY, _, _ ->
             if (v.getChildAt(0).bottom <= v.height + scrollY) {
-                viewModel.fetchAnotherNews()
+                viewModel.fetchAnophelesNews()
             }
         })
     }
 
-    private fun setUpAnotherNewsRv() {
-        anotherAdapter = AnotherCategoryAdapter()
-        binding.rvAnotherNews.apply {
+    private fun setUpAnophelesNewsRv() {
+        anophelesAdapter = AnophelesCategoryAdapter()
+        binding.rvAnophelesNews.apply {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            adapter = anotherAdapter
+            adapter = anophelesAdapter
         }
     }
 
@@ -131,7 +131,7 @@ class AnotherCategoryFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.resetPaging()
-        viewModel.fetchAnotherNews()
+        viewModel.fetchAnophelesNews()
     }
 
     override fun onDestroyView() {
