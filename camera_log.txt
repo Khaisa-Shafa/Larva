@@ -1,0 +1,15 @@
+=== LOG START ===
+02:37:27.002: Surface ready! w=1080 h=2340
+02:37:27.004: SurfaceTexture: android.graphics.SurfaceTexture@7ea6fbd
+02:37:27.014: 🚀 Membuka kamera UVC... (attempt 1)
+02:37:27.023: ✅ openCamera dipanggil
+02:37:27.030: 🚀 Membuka kamera UVC... (attempt 1)
+02:37:27.031: ✅ openCamera dipanggil
+02:37:27.141: onConnectDev ✅ ctrlBlock=false
+02:37:27.143: onConnectDev ✅ ctrlBlock=false
+02:37:28.402: onConnectDev ✅ ctrlBlock=false
+02:37:28.563: onDisConnectDev
+02:37:28.590: onDisConnectDev
+02:37:33.659: 📡 Broadcast: android.hardware.usb.action.USB_DEVICE_DETACHED | VID:1507 PID:61739
+02:37:33.661: ❌ USB Detached
+02:37:33.668: onDetachDev
