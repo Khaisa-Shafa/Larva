@@ -69,7 +69,13 @@ dependencies {
     implementation(libs.tensorflow.lite.support)
     implementation(libs.tensorflow.lite.metadata)
     implementation(libs.tensorflow.lite.gpu)
-    implementation(project(":libuvc"))
+    implementation(libs.tensorflow.lite.task.vision)
+    implementation(libs.core.ktx)
+    implementation(libs.core.ktx)
+    implementation(libs.androidx.core.core.ktx)
+    implementation(libs.androidx.core.core.ktx)
+//    implementation(project(":libuvc"))
+//    implementation(libs.core.ktx)
     kapt(libs.hilt.android.compiler)
 
 //    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
@@ -121,19 +127,50 @@ dependencies {
 
     //room
     implementation(libs.androidx.room.runtime)
-    kapt(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
+    kapt (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx)
 
     //uvc
-    implementation(project(":libausbc"))
+//    implementation (project(":libausbc"))
 
     //camera
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.view)
+    implementation (libs.androidx.camera.core)
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.video)
+
+//    implementation (libs.androidx.concurrent.futures)
+    implementation("androidx.concurrent:concurrent-futures:1.1.0")
+    implementation (libs.androidx.concurrent.futures.ktx)
+
+    implementation (libs.androidx.core)
+    implementation (libs.androidx.core.ktx)
+
+    implementation(libs.guava)
+    implementation(libs.androidx.concurrent.futures)
+
 
 }
 
 // Allow references to generated code
 kapt {
     correctErrorTypes = true
+}
+
+configurations.all {
+    resolutionStrategy {
+//        force (libs.androidx.camera.core)
+//        force (libs.androidx.camera.camera2)
+//        force (libs.androidx.camera.lifecycle)
+//        force (libs.androidx.camera.view)
+//        force (libs.androidx.camera.video)
+
+        // ✅ TAMBAH INI:
+        force (libs.androidx.core)
+        force (libs.androidx.core.ktx)
+    }
+
+    exclude(group = "com.google.ai.edge.litert", module = "litert-api")
+    exclude(group = "com.google.ai.edge.litert", module = "litert-support-api")
 }

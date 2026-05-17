@@ -23,7 +23,7 @@ object Constants {
     // Model baru (YOLO11-Seg + MobileViT)
     const val MODEL_PATH_DETECTION_NEW = "baru/yolo11_seg.tflite"
     const val LABELS_PATH_DETECTION_NEW = "baru/detection_labels.txt"
-    const val MODEL_PATH_CLASSIFICATION_NEW = "baru/model_float32.tflite"
+    const val MODEL_PATH_CLASSIFICATION_NEW = "baru/mobilevit.tflite"
     const val LABELS_PATH_CLASSIFICATION_NEW = "baru/classification_labels.txt"
 
     // Enum pilihan model

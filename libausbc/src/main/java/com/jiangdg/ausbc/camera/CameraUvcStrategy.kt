@@ -156,10 +156,14 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
 
             Thread.sleep(200)
 
-            Logger.e(TAG, "Supported sizes: ${mUVCCamera?.supportedSizeList}")
+            val yuyvSizes = mUVCCamera?.getSupportedSizeList(UVCCamera.FRAME_FORMAT_YUYV)
+            val mjpegSizes = mUVCCamera?.getSupportedSizeList(UVCCamera.FRAME_FORMAT_MJPEG)
+            Logger.e(TAG, "YUYV sizes: $yuyvSizes")
+            Logger.e(TAG, "MJPEG sizes: $mjpegSizes")
+            Logger.e(TAG, "Default sizes: ${mUVCCamera?.supportedSizeList}")
 
-            // FIX: Satu loop kombinasi saja, tidak perlu blok try-catch terpisah di atas
-            // Urutan: bandwidth rendah dulu (lebih stabil untuk device dengan USB bandwidth terbatas)
+//            Logger.e(TAG, "Supported sizes: ${mUVCCamera?.supportedSizeList}")
+
             val combinations = listOf(
                 Triple(640, 480, 0.25f),
                 Triple(320, 240, 0.25f),
@@ -167,19 +171,10 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
                 Triple(320, 240, 0.5f),
             )
 
-
             var previewSet = false
-
-            for ((w, h, bw) in combinations) {
-                try {
-                    mUVCCamera?.setPreviewSize(w, h, MIN_FS, MAX_FS, UVCCamera.FRAME_FORMAT_MJPEG, bw)
-                    Logger.e(TAG, "✅ setPreviewSize MJPEG ${w}x${h} bw=$bw berhasil")
-                    previewSet = true
-                    break
-                } catch (e: Exception) {
-                    Logger.e(TAG, "❌ MJPEG ${w}x${h} bw=$bw gagal: ${e.message}")
-                }
-            }
+            mUVCCamera?.setPreviewSize(640, 480, MIN_FS, MAX_FS, UVCCamera.FRAME_FORMAT_YUYV, 1.0f)
+            Logger.e(TAG, "✅ setPreviewSize YUYV 640x480 bw=1.0f berhasil")
+            previewSet = true
 
             if (!previewSet) {
                 Logger.e(TAG, "❌ Semua kombinasi YUYV gagal, coba MJPEG...")
@@ -223,13 +218,14 @@ class CameraUvcStrategy(ctx: Context) : ICameraStrategy(ctx) {
 
             Thread.sleep(200)
 
-            // FIX: Set frameCallback TANPA setPreviewTexture
-            // Device ST301 mungkin tidak bisa streaming ke texture DAN frameCallback sekaligus
-            mUVCCamera?.setFrameCallback(frameCallBack, UVCCamera.PIXEL_FORMAT_RAW)
-            Logger.e(TAG, "✅ setFrameCallback dipasang, SKIP setPreviewTexture")
+            if (st != null) {
+                mUVCCamera?.setPreviewTexture(st)
+                Logger.e(TAG, "✅ setPreviewTexture dipanggil")
+            }
+            Thread.sleep(100)
 
-            // Jangan set texture — biarkan frameCallback yang handle display
-            // if (st != null) mUVCCamera?.setPreviewTexture(st)
+            mUVCCamera?.setFrameCallback(frameCallBack, UVCCamera.PIXEL_FORMAT_RAW)
+            Logger.e(TAG, "✅ setFrameCallback dipasang setelah setPreviewTexture")
 
             mUVCCamera?.updateCameraParams()
             mIsPreviewing.set(true)

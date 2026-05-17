@@ -64,9 +64,8 @@ class LiveDetectionViewModel @Inject constructor() : ViewModel() {
             val results = mutableListOf<ClassifiedBox>()
             val counter = mutableMapOf<String, Int>()
 
-            boxes.forEach { box ->
-                val crop = cropBitmap(bitmap, box)
-
+            for (box in boxes){
+                val crop = cropBitmap(bitmap, box) ?: continue
                 val result = cls.classifyWithConfidence(crop)
                 val best = result.maxByOrNull { it.second }
 
@@ -83,12 +82,27 @@ class LiveDetectionViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun cropBitmap(bitmap: Bitmap, box: BoundingBox): Bitmap {
+    private fun cropBitmap(bitmap: Bitmap, box: BoundingBox): Bitmap? {
+        if (bitmap.isRecycled) return null
+
         val x = (box.x1 * bitmap.width).toInt().coerceIn(0, bitmap.width - 1)
         val y = (box.y1 * bitmap.height).toInt().coerceIn(0, bitmap.height - 1)
-        val w = ((box.x2 - box.x1) * bitmap.width).toInt().coerceAtLeast(1)
-        val h = ((box.y2 - box.y1) * bitmap.height).toInt().coerceAtLeast(1)
+        val w = ((box.x2 - box.x1) * bitmap.width).toInt().coerceIn(1, bitmap.width - x)
+        val h = ((box.y2 - box.y1) * bitmap.height).toInt().coerceIn(1, bitmap.height - y)
 
-        return Bitmap.createBitmap(bitmap, x, y, w, h)
+        // ✅ TAMBAH INI — tolak crop yang terlalu kecil
+        if (w < 10 || h < 10) {
+            Log.w("Classifier", "Crop terlalu kecil: ${w}x${h}, skip")
+            return null
+        }
+
+        Log.d("Classifier", "Crop: x=$x y=$y w=$w h=$h dari ${bitmap.width}x${bitmap.height}")
+
+        return try {
+            Bitmap.createBitmap(bitmap, x, y, w, h)
+        } catch (e: Exception) {
+            Log.e("Classifier", "createBitmap gagal: ${e.message}")
+            null
+        }
     }
 }

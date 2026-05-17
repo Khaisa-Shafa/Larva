@@ -110,10 +110,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="✅ YOLO11-Seg → Digunakan untuk mendeteksi keberadaan larva dalam gambar. \n✅ MobileViT → Digunakan untuk mengklasifikasikan jenis larva. \n✅ Dataset : Larva Aedes, Larva Anopheles, dan Larva Culex"
+            android:text="✅ YOLOv8 dan YOLOv11-Seg→ Digunakan untuk mendeteksi keberadaan larva dalam gambar. \n✅ MobileNetV3 dan MobileViT → Digunakan untuk mengklasifikasikan jenis larva. \n✅ Dataset : Larva Aedes, Larva Anopheles, dan Larva Culex"
             android:textColor="@color/custom_color_black"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@+id/textView8"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/textView8"
             app:layout_constraintTop_toBottomOf="@+id/textView8" />
 

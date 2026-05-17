@@ -16,7 +16,6 @@ class YoloSegHelper(
 ) {
 
     private val interpreter: Interpreter
-
     private val inputSize = 640
     private val numElements = 39
     private val numAnchors = 8400

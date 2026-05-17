@@ -23,7 +23,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "SkripsiApp"
 include(":app")
-include(":libausbc")
-include(":libuvc")
-include(":libnative")
+//include(":libausbc")
+//include(":libuvc")
+//include(":libnative")
  

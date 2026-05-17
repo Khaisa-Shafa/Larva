@@ -57,15 +57,14 @@
 
         <activity
             android:name=".activity.LiveDetectionActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode|navigation"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
             android:exported="false">
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/usb_device_filter" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />-->
+<!--            </intent-filter>-->
+<!--            <meta-data-->
+<!--                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"-->
+<!--                android:resource="@xml/usb_device_filter" />-->
         </activity>
 
         <provider

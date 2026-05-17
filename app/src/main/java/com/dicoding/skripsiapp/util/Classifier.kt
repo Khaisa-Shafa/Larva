@@ -80,26 +80,38 @@ class Classifier(
     }
 
     private fun preprocessImage(bitmap: Bitmap): ByteBuffer {
-        val inputSize = interpreter.getInputTensor(0).shape()[1] // baca dari model langsung
+        // ✅ shape = [1, 3, 256, 256] — channel first
+        // shape()[1] = 3 (channel), shape()[2] = 256 (height), shape()[3] = 256 (width)
+        val inputTensor = interpreter.getInputTensor(0)
+        val shape = inputTensor.shape()
+
+        // ✅ Deteksi format otomatis
+        val isChannelFirst = shape[1] == 3 || shape[1] == 1  // NCHW
+        val inputSize = if (isChannelFirst) shape[2] else shape[1]  // ambil H
+
+        Log.d("Classifier", "Format: ${if (isChannelFirst) "NCHW" else "NHWC"}, inputSize: $inputSize")
+
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
-        val byteBuffer = ByteBuffer.allocateDirect(4 * inputSize * inputSize * 3)
+        val byteBuffer = ByteBuffer.allocateDirect(4 * 3 * inputSize * inputSize)
         byteBuffer.order(ByteOrder.nativeOrder())
 
         val intValues = IntArray(inputSize * inputSize)
         resizedBitmap.getPixels(intValues, 0, inputSize, 0, 0, inputSize, inputSize)
 
-        var pixel = 0
-        for (i in 0 until inputSize) {
-            for (j in 0 until inputSize) {
-                val pixelValue = intValues[pixel++]
-                val r = (pixelValue shr 16) and 0xFF
-                val g = (pixelValue shr 8) and 0xFF
-                val b = pixelValue and 0xFF
-                byteBuffer.putFloat(r / 255f)
-                byteBuffer.putFloat(g / 255f)
-                byteBuffer.putFloat(b / 255f)
+        if (isChannelFirst) {
+            // ✅ NCHW: isi semua R dulu, lalu G, lalu B
+            for (pixel in intValues) byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255f) // R
+            for (pixel in intValues) byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255f)  // G
+            for (pixel in intValues) byteBuffer.putFloat((pixel and 0xFF) / 255f)           // B
+        } else {
+            // NHWC: R G B per pixel
+            for (pixel in intValues) {
+                byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255f)
+                byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255f)
+                byteBuffer.putFloat((pixel and 0xFF) / 255f)
             }
         }
+
         return byteBuffer
     }
 
